@@ -10,5 +10,9 @@
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.5"
+  },
+  "version": "0.1.0",
+  "engines": {
+    "node": "16.x"
   }
 }

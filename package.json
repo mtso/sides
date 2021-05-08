@@ -9,5 +9,9 @@
     "faster-word-id": "^0.1.0",
     "mongoose": "^5.12.7",
     "ws": "^7.4.5"
+  },
+  "version": "0.1.0",
+  "engines": {
+    "node": "16.x"
   }
 }
