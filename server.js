@@ -34,16 +34,32 @@ const wss = new WebSocket.Server({
   noServer: true,
 });
 
+const fakeGameState = { "gameId": "spend-example", "questions": [ { "_id": "60962f0cf716f1e38a9dd710", "text": "Hot or cold?" }, { "_id": "60963534ef26be0015f13bc2", "text": "Coffee or tea?" } ], "gameState": { "version": 172, "activeQuestionId": "60963534ef26be0015f13bc2", "players": [ "p1 <p1@wepay.com>", "p2 <p2@wepay.com>", "p3 <p3@wepay.com>", "p4 <p4@wepay.com>", "p6 <p6@wepay.com>", "p5 <p5@wepay.com>", "p7 <p7@wepay.com>", "p8 <p8@wepay.com>", "p9 <p9@wepay.com>" ], "offline": [ "p2 <p2@wepay.com>", "p3 <p3@wepay.com>" ], "responses": { "60962f0cf716f1e38a9dd710": { "a": [ "p5 <p5@wepay.com>", "p8 <p8@wepay.com>", "p7 <p7@wepay.com>", "p9 <p9@wepay.com>" ], "b": [ "p1 <p1@wepay.com>", "p2 <p2@wepay.com>" ] }, "60963534ef26be0015f13bc2": { "a": [], "b": [] } } }, "createdAt": "2021-05-08T06:24:10.300Z", "updatedAt": "2021-05-08T07:07:14.507Z" }
+
 wss.on('connection', function connection(ws) {
   console.log('connected', ws.id);
   ws.on('message', function incoming(message) {
     console.log('received: %s', message);
-
-    ws.send('thanks for:' + message);
-
+    try {
+      const msg = JSON.parse(message)
+      ws.send(JSON.stringify({
+        event: 'response',
+        messageId: msg.messageId,
+        room: msg.room,
+        message: msg.message,
+        gameState: fakeGameState,
+      }));
+    } catch (err) {
+      console.error('failed to parse message', message);
+    }
   });
 
-  ws.send('something');
+  ws.send(JSON.stringify({
+    event: 'ping',
+    messageId: Date.now(),
+    room: null,
+    message: fakeGameState,
+  }));
 });
 
 setInterval(() => {
@@ -55,7 +71,12 @@ setInterval(() => {
   }
   wss.clients.forEach((c) => {
     if (c.readyState === WebSocket.OPEN) {
-      c.send(JSON.stringify({messageId, message: 'hello', event: 'ping'}))
+      c.send(JSON.stringify({
+        event: 'ping',
+        messageId: messageId,
+        room: null,
+        message: 'hello',
+      }));
     } else {
       console.log('not sending message because client is not open')
       console.log(c.readyState)
