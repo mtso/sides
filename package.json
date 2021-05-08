@@ -1,7 +1,8 @@
 {
   "scripts": {
     "postinstall": "cd frontend && npm install --production=false && npm run build",
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "env $(cat .env | xargs) npm start"
   },
   "dependencies": {
     "body-parser": "^1.19.0",

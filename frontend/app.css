@@ -1,9 +1,52 @@
+/* Font */
 html, body, div {
   font-family: "Hanken Grotesk", Arial, sans-serif;
   margin: 0;
   padding: 0;
 }
 
+/* Layout */ 
 .container {
   margin: 0.6em;
+}
+.container h1,h2,h3,h4,h5,h6 {
+  margin-bottom: 0.4em;
+}
+
+.row {
+  margin: 1em 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.row ul {
+  padding-left: 1.2em;
+  margin: 0;
+}
+.col {
+  flex-grow: 1;
+}
+
+/* Controls */
+.control {
+  margin-bottom: 0.6em;
+}
+input[type="submit"].control, button.control {
+  height: 2em;
+}
+input[type="search"].control {
+  height: 2em;
+  min-width: 14em;
+}
+input[type="password"].control,
+input[type="email"].control,
+input[type="text"].control {
+  height: 1.6em;
+  min-width: 12em;
+}
+input[type="search"].control,
+input[type="password"].control,
+input[type="email"].control,
+input[type="text"].control {
+  padding: 0.05em 0.3em;
 }
