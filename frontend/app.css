@@ -1,0 +1,9 @@
+html, body, div {
+  font-family: "Hanken Grotesk", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  margin: 0.6em;
+}
