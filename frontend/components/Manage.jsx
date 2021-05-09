@@ -59,9 +59,9 @@ export default class Manage extends Component {
                 Put this on a big screen: <a href={"/" + this.props.gameId + "/present"}>{location.host}{"/" + this.props.gameId}/present</a>
               </div>
 
-              <details>
+              <details style={{backgroundColor:"#eee"}}>
                 <summary>Options</summary>
-                <div className="container" style={{backgroundColor:"#eee"}}>
+                <div className="container">
                   <div>
                     Bookmark the admin link <a href={"/" + this.props.gameId + "/manage-" + this.props.adminCode}>{location.host}{"/" + this.props.gameId + "/manage-" + this.props.adminCode}</a>
                   </div>
@@ -167,18 +167,17 @@ export default class Manage extends Component {
 
             <div className="col" style={{minWidth: '300px', maxWidth:'300px'}}>
               <h3>Players</h3>
-              {/*<ul>
+              <ul>
                 {
-                  (this.state.gameState.players || []).map((player) => {
-                    const isOffline = !!offlineMap[player]
+                  (this.state.players || []).map((player) => {
+                    {/*const isOffline = !!offlineMap[player]*/}
                     return (
                       <li key={player}
-                        style={{color: isOffline ? 'gray' : 'black'}}
                       >{player}</li>
                     )
                   })
                 }
-              </ul>*/}
+              </ul>
             </div>
           </div>
 
