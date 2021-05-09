@@ -59,45 +59,47 @@ export default class Manage extends Component {
                 Put this on a big screen: <a href={"/" + this.props.gameId + "/present"}>{location.host}{"/" + this.props.gameId}/present</a>
               </div>
 
-              <details open>
+              <details>
                 <summary>Options</summary>
-                <div>
-                  Bookmark the admin link <a href={"/" + this.props.gameId + "/manage-" + this.props.adminCode}>{location.host}{"/" + this.props.gameId + "/manage-" + this.props.adminCode}</a>
-                </div>
-                <div>
-                  <a href={"/" + this.props.gameId + `/data-v${(this.state || {}).version}.json`} download>Download the JSON data for questions and responses.</a>
-                </div>
-                <div>
-                  <form onSubmit={(e) => {
-                    e.preventDefault()
-                    this.updatePlayerRegex(this.state.newPlayerRegex, this.state.newPlayerRegexMessage)
-                  }}>
-                    <h4>Validate Player IDs (email)</h4>
-                    <div>Player Regex: <input className="control" type="text"
-                      placeholder={'^.*@email\\.com$'}
-                      value={this.state.newPlayerRegex}
-                      onChange={(e) => this.setState({ newPlayerRegex: e.target.value })}
-                      /></div>
-                    <div>Player Regex Message: <input className="control" type="text"
-                      placeholder={'Please enter your email.'}
-                      value={this.state.newPlayerRegexMessage}
-                      onChange={(e) => this.setState({ newPlayerRegexMessage: e.target.value })}
-                      /></div>
-                    <div>
-                      <button className="control"
-                        onClick={(e) => {
-                          this.setState({
-                            newPlayerRegex: this.state.playerRegex,
-                            newPlayerRegexMessage: this.state.playerRegexMessage,
-                          })
-                        }}
-                        disabled={(this.state.newPlayerRegex===this.state.playerRegex && this.state.newPlayerRegexMessage===this.state.playerRegexMessage)}
-                      >Cancel</button>
-                      <input type="submit" value="Save" className="control"
-                        disabled={(this.state.newPlayerRegex===this.state.playerRegex && this.state.newPlayerRegexMessage===this.state.playerRegexMessage)}
-                      />
-                    </div>
-                  </form>
+                <div className="container" style={{backgroundColor:"#eee"}}>
+                  <div>
+                    Bookmark the admin link <a href={"/" + this.props.gameId + "/manage-" + this.props.adminCode}>{location.host}{"/" + this.props.gameId + "/manage-" + this.props.adminCode}</a>
+                  </div>
+                  <div>
+                    <a href={"/" + this.props.gameId + `/data-v${(this.state || {}).version}.json`} download>Download the JSON data for questions and responses.</a>
+                  </div>
+                  <div>
+                    <form onSubmit={(e) => {
+                      e.preventDefault()
+                      this.updatePlayerRegex(this.state.newPlayerRegex, this.state.newPlayerRegexMessage)
+                    }}>
+                      <h4>Validate Player IDs (email)</h4>
+                      <div>Player Regex: <input className="control" type="text"
+                        placeholder={'^.*@email\\.com$'}
+                        value={this.state.newPlayerRegex}
+                        onChange={(e) => this.setState({ newPlayerRegex: e.target.value })}
+                        /></div>
+                      <div>Player Regex Message: <input className="control" type="text"
+                        placeholder={'Please enter your email.'}
+                        value={this.state.newPlayerRegexMessage}
+                        onChange={(e) => this.setState({ newPlayerRegexMessage: e.target.value })}
+                        /></div>
+                      <div>
+                        <button className="control"
+                          onClick={(e) => {
+                            this.setState({
+                              newPlayerRegex: this.state.playerRegex,
+                              newPlayerRegexMessage: this.state.playerRegexMessage,
+                            })
+                          }}
+                          disabled={(this.state.newPlayerRegex===this.state.playerRegex && this.state.newPlayerRegexMessage===this.state.playerRegexMessage)}
+                        >Cancel</button>
+                        <input type="submit" value="Save" className="control"
+                          disabled={(this.state.newPlayerRegex===this.state.playerRegex && this.state.newPlayerRegexMessage===this.state.playerRegexMessage)}
+                        />
+                      </div>
+                    </form>
+                  </div>
                 </div>
               </details>
 
