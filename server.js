@@ -44,13 +44,14 @@ function makeWebError(status, message) {
 }
 
 app.post('/api/games/:id', async (req, res) => {
+  const gameId = req.params.id
   const adminModifiable = pick(req.body, [
     'questions', 'playerRegex', 'playerRegexMessage',
     'openQuestionId',
   ])
 
   const game = await Game.findOneAndUpdate({
-    gameId: req.params.id,
+    gameId,
     adminCode: req.query.adminCode,
   }, adminModifiable, { upsert: false, new: true })
 
@@ -60,8 +61,51 @@ app.post('/api/games/:id', async (req, res) => {
 
   if ('openQuestionId' in req.body) {
     // update game state.
+    manager.broadcastUpdate(gameId, renderGameJson(game))
   }
 })
+
+app.post('/api/games/:id/choose', async (req, res) => {
+  const gameId = req.params.id
+  const choice = req.body.choice
+  const player = req.body.player
+  const questionId = req.body.questionId
+
+  if (!questionId || !player) { throw makeWebError(400, 'Missing questionId or player') }
+
+  const patch = {}
+  if (choice === null) {
+    patch['$pull'] = {
+      [`responses.${questionId}.a`]: player,
+      [`responses.${questionId}.b`]: player,
+    }
+  } else if (choice === 'a') {
+    patch['$pull'] = {
+      [`responses.${questionId}.b`]: player,
+    }
+    patch['$addToSet'] = {
+      [`responses.${questionId}.a`]: player,
+    }
+  } else if (choice === 'b') {
+    patch['$pull'] = {
+      [`responses.${questionId}.a`]: player,
+    }
+    patch['$addToSet'] = {
+      [`responses.${questionId}.b`]: player,
+    }
+  } else {
+    return res.status(400).json({ error: 'Invalid choice' })
+  }
+
+  const game = await Game.findOneAndUpdate({ gameId, openQuestionId: questionId },
+    patch, { upsert: false, new: true })
+  // Could also be that the question ID does not match the open one.
+  if (!game) { throw makeWebError(404, 'Not found') }
+  const gameJson = renderGameJson(game)
+  res.json(gameJson)
+  manager.broadcastUpdate(gameId, gameJson)
+})
+
 app.get('/api/games/:id', async (req, res) => {
   const game = await Game.findOne({ gameId: req.params.id })
   if (!game) {
@@ -71,7 +115,6 @@ app.get('/api/games/:id', async (req, res) => {
 })
 
 app.post('/:id/join', async (req, res) => {
-  // console.log('got req', req.params, req.body)
   const gameId = req.params.id
   const game = await Game.findOne({ gameId })
   if (!game) { return res.redirect('/') }
@@ -89,7 +132,6 @@ app.post('/:id/join', async (req, res) => {
   if (!name) {
     return res.redirect('/' + gameId + '?state=errorPlayerName&' + uriParams)
   }
-  // console.log('got req2', req.params, req.body)
 
   const newGame = await Game.findOneAndUpdate({ gameId }, {
     $addToSet: { players: player },
@@ -117,10 +159,13 @@ app.get('/:id/manage-:adminCode', async (req, res) => {
   res.end(markup)
 })
 
-app.get('/:id/present', (req, res) => {
+app.get('/:id/present', async (req, res) => {
+  const game = await Game.findOne({ gameId: req.params.id })
+
+  if (!game) { res.redirect('/') }
   const markup = getMarkup({
     page: 'present',
-    testInfo: crypto.randomUUID(),
+    ...renderGameJson(game),
   })
   res.end(markup)
 })
@@ -168,27 +213,13 @@ const wss = new WebSocket.Server({
   noServer: true,
 });
 
-const fakeGameState = { "gameId": "spend-example", "questions": [ { "_id": "60962f0cf716f1e38a9dd710", "text": "Hot or cold?" }, { "_id": "60963534ef26be0015f13bc2", "text": "Coffee or tea?" } ], "gameState": { "version": 172, "activeQuestionId": "60963534ef26be0015f13bc2", "players": [ "p1 <p1@wepay.com>", "p2 <p2@wepay.com>", "p3 <p3@wepay.com>", "p4 <p4@wepay.com>", "p6 <p6@wepay.com>", "p5 <p5@wepay.com>", "p7 <p7@wepay.com>", "p8 <p8@wepay.com>", "p9 <p9@wepay.com>" ], "offline": [ "p2 <p2@wepay.com>", "p3 <p3@wepay.com>" ], "responses": { "60962f0cf716f1e38a9dd710": { "a": [ "p5 <p5@wepay.com>", "p8 <p8@wepay.com>", "p7 <p7@wepay.com>", "p9 <p9@wepay.com>" ], "b": [ "p1 <p1@wepay.com>", "p2 <p2@wepay.com>" ] }, "60963534ef26be0015f13bc2": { "a": [], "b": [] } } }, "createdAt": "2021-05-08T06:24:10.300Z", "updatedAt": "2021-05-08T07:07:14.507Z" }
-
 wss.on('connection', function connection(ws) {
   ws.on('close', async function(message) {
     console.log(message)
     try {
       manager.removePlayer(ws.gameId, ws.player)
       const game = await Game.findOne({ gameId: ws.gameId })
-      const update = {
-        event: 'update',
-        online: manager.getPlayers(ws.gameId).map((c) => {
-          return {
-            player: c.player,
-            name: c.name,
-            lastMessageTime: c.lastMessageTime,
-          }
-        }),
-        ...renderGameJson(game),
-      }
-      const message = JSON.stringify(update)
-      manager.getPlayers(ws.gameId).forEach((c) => c.send(message))
+      manager.broadcastUpdate(gameId, renderGameJson(game))
     } catch (err) {
       console.error('Failed to handle close', ws.gameId, ws.player)
     }
@@ -196,81 +227,37 @@ wss.on('connection', function connection(ws) {
 
   ws.on('message', async function incoming(message) {
     console.log('received: %s', message);
+    let msg
     try {
-      const msg = JSON.parse(message)
-      if (msg.event === 'join') {
-        const { gameId, player, name } = msg
-        const game = await Game.findOne({ gameId })
-        if (!game) {
-          ws.send({ event: 'error', error: 'Game not found' })
-          return
-        }
-        if (manager.hasPlayer(gameId, msg)) {
-          // pass
-          console.log('Game already has player!', gameId, player, name)
-        } else {
-          // addPlayer: (gameId, player, name, lastMessageTime, ws) => {
-          manager.addPlayer(gameId, player, name, Date.now(), ws)
-        }
-        const update = {
-          event: 'update',
-          online: manager.getPlayers(gameId).map((c) => {
-            return {
-              player: c.player,
-              name: c.name,
-              lastMessageTime: c.lastMessageTime,
-            }
-          }),
-          ...renderGameJson(game),
-        }
-        const message = JSON.stringify(update)
-        manager.getPlayers(gameId).forEach((c) => c.send(message))
-      } else {
-        console.warn('Unrecognized event', msg)
+      msg = JSON.parse(message)
+    } catch(err) {
+      console.error('Failed to parse message', message);
+    }
+
+    if (msg.event === 'join') {
+      const { gameId, player, name } = msg
+      const game = await Game.findOne({ gameId })
+      if (!game) {
+        ws.send({ event: 'error', error: 'Game not found' })
+        return
       }
-      // ws.send(JSON.stringify({
-      //   event: 'response',
-      //   messageId: msg.messageId,
-      //   room: msg.room,
-      //   message: msg.message,
-      //   gameState: fakeGameState,
-      // }));
-    } catch (err) {
-      console.error('failed to parse message', message);
+      if (manager.hasPlayer(gameId, msg)) {
+        // pass
+        console.log('Game already has player!', gameId, player, name)
+      } else {
+        // addPlayer: (gameId, player, name, lastMessageTime, ws) => {
+        manager.addPlayer(gameId, player, name, Date.now(), ws)
+      }
+      manager.broadcastUpdate(gameId, renderGameJson(game))
+    }
+    else if (msg.event === 'ping') {
+      console.log('got ping', ws.player)
+    }
+    else {
+      console.warn('Unrecognized event', msg)
     }
   });
-
-  setTimeout(() => {
-    ws.send(JSON.stringify({
-      event: 'ping',
-      messageId: Date.now(),
-      room: null,
-      message: fakeGameState,
-    }));
-  }, 2000)
 });
-
-// setInterval(() => {
-//   const messageId = Date.now()
-//   console.log('sending ping', messageId)
-//   if (!wss.clients) {
-//     console.log('skipping ping because clients not avail')
-//     return
-//   }
-//   wss.clients.forEach((c) => {
-//     if (c.readyState === WebSocket.OPEN) {
-//       c.send(JSON.stringify({
-//         event: 'ping',
-//         messageId: messageId,
-//         room: null,
-//         message: 'hello',
-//       }));
-//     } else {
-//       console.log('not sending message because client is not open')
-//       console.log(c.readyState)
-//     }
-//   })
-// }, 5000)
 
 server.on('upgrade', function (request, socket, head) {
   console.log('Parsing upgrade request...');

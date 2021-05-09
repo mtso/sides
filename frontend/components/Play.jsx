@@ -9,7 +9,6 @@ export default class Play extends Component {
     super(props)
     this.state = {
       openQuestionId: null,
-      responses: {},
       questions: [],
     }
     // this.manager = new Manager(this.props.gameId)
@@ -24,9 +23,24 @@ export default class Play extends Component {
     // })
 
     this.game.join(this.props.player, this.props.name)
-    this.game.on('update', (event) => console.log('Event:update', event))
+    this.game.on('update', ({ openQuestionId, questions }) => {
+      this.setState({
+        openQuestionId,
+        questions,
+      })
+    })
     this.game.on('ping', (event) => console.log('Event:ping', event))
     this.game.on('response', (event) => console.log('Event:response', event))
+  }
+
+  async makeChoice(choice) {
+    const resp = await superagent.post('/api/games/' + this.props.gameId + '/choose')
+      .send({
+        questionId: this.state.openQuestionId,
+        player: this.props.player,
+        choice: choice,
+      })
+    this.setState(pick(resp, Object.keys(this.state)))
   }
 
   render() {
@@ -37,9 +51,15 @@ export default class Play extends Component {
           <h3>Question: {question && question.text}</h3>
         </div>
         <div>
-          <button className="control">Left</button>
-          <button className="control"><span style={{verticalAlign: "middle", fontSize: '1.05em'}}>🏝</span></button>
-          <button className="control">Right</button>
+          <button className="control"
+            onClick={(e) => this.makeChoice('a')}
+          >Left</button>
+          <button className="control"
+            onClick={(e) => this.makeChoice(null)}
+          ><span style={{verticalAlign: "middle", fontSize: '1.05em'}}>🏝</span></button>
+          <button className="control"
+            onClick={(e) => this.makeChoice('b')}
+          >Right</button>
         </div>
       </div>
     )

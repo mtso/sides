@@ -51,7 +51,7 @@ export default class Game extends EventEmitter {
       }
     }
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.once('open', (data) => {
         console.log('Opened', data)
         resolve(this.ws)
@@ -81,14 +81,28 @@ export default class Game extends EventEmitter {
       if (this.isJoined) {
         if (!this.ws) {
           try {
+            console.log('Checking if a connection can be established')
             await this.getWs()
+            // ws.send(JSON.stringify({event:'ping', player, name, gameId: this.gameId}))
           } catch(err) {
-
+            console.warn(err)
           }
         }
-      } else {
-        clearInterval(this.monitorTimer)
-        this.monitorTimer = null
+        else {
+          console.log('pinging server')
+          const ws = await this.getWs()
+          if (ws.readyState === CLOSING || ws.readyState === CLOSED) {
+            this.ws = null
+            console.log('removing ws')
+            return
+          }
+          try {
+            ws.send(JSON.stringify({event:'ping', player, name, gameId: this.gameId}))
+          } catch(err) {
+            this.ws = null
+            console.warn('failed to ping')
+          }
+        }
       }
     }, 5000)
   }

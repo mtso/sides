@@ -50,6 +50,21 @@ function makeManager2() {
     getPlayers: (gameId) => {
       return store[gameId] || null
     },
+    broadcastUpdate: (gameId, gameJson) => {
+      if (!(gameId in store)) { return }
+      const players = (store[gameId] || [])
+      const update = {
+        event: 'update',
+        online: players.filter((c) => !['admin', 'present'].includes(c.player)).map((c) => ({
+          player: c.player,
+          name: c.name,
+          lastMessageTime: c.lastMessageTime,
+        })),
+        ...gameJson,
+      }
+      const message = JSON.stringify(update)
+      players.forEach((c) => c.send(message))
+    }
   }
 }
 

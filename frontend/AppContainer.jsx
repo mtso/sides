@@ -4,6 +4,7 @@ import WsTest from './WsTest'
 import Manage from './components/Manage'
 import Lobby from './components/Lobby'
 import Play from './components/Play'
+import Present from './components/Present'
 
 export default class AppContainer extends React.Component {
   render() {
@@ -19,12 +20,19 @@ export default class AppContainer extends React.Component {
         />
       )
     } else if (this.props.page === 'play') {
-      console.log(this.props)
       return (
         <Play
           gameId={this.props.gameId}
           player={this.props.player}
           name={this.props.name}
+        />
+      )
+    } else if (this.props.page === 'present') {
+      return (
+        <Present
+          gameId={this.props.gameId}
+          players={this.props.players}
+          responses={this.props.responses}
         />
       )
     }
