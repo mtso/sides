@@ -13,23 +13,24 @@ html, body, div {
   margin-bottom: 0.4em;
 }
 
-.row {
+div.row {
   margin: 1em 0;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
 }
-.row ul {
+div.row ul {
   padding-left: 1.2em;
   margin: 0;
 }
-.col {
+div.col {
   flex-grow: 1;
 }
 
 /* Controls */
 .control {
   margin-bottom: 0.6em;
+  margin-right: 0.3em;
 }
 input[type="submit"].control, button.control {
   height: 2em;

@@ -1,4 +1,10 @@
-function getMarkup({testInfo}) {
+function getMarkup(params) {
+  // const {page, testInfo, gameId, adminCode} = params
+  // 
+            //     gameId, adminCode
+            //     page: "${page}",
+            //     testInfo: ${JSON.stringify(testInfo)},
+            // }
   return `<!DOCTYPE html>
 <html>
     <head>
@@ -9,7 +15,7 @@ function getMarkup({testInfo}) {
         <link rel="stylesheet" type="text/css" href="/static/app.css" />
         <!-- <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet"> -->
         <script type="text/javascript">
-            window.testInfo = ${JSON.stringify(testInfo)};
+            window.appData = ${JSON.stringify(params, null, 2).replace(/</g, '\\u003c')};
         </script>
     </head>
     <body>

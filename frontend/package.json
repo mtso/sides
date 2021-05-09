@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "build": "parcel build --public-url /static/ app.js app.css font.css"
+    "build": "parcel build --public-url /static/ app.js app.css font.css",
+    "watch": "parcel watch app.js"
   },
   "dependencies": {
     "d3": "^6.7.0",

@@ -33,6 +33,42 @@ async function updateGameState(gameId, gameState, retriesLeft) {
   })
 }
 
+// function makeGame() {
+//   return {
+//     openQuestion: (gameId, questionId) => {
+
+//     },
+//     makeChoice: (gameId, player, questionId, id) => {
+//       const game = getGame(gameId)
+      
+//       manager.newGameState(game)
+//     },
+//   }
+// }
+
+function renderGameJson(game) {
+  return {
+    gameId: game.gameId,
+    createdAt: game.createdAt,
+    updatedAt: game.updatedAt,
+    questions: game.questions,
+    playerRegexMessage: game.playerRegexMessage,
+    playerRegex: game.playerRegex,
+    openQuestionId: game.openQuestionId,
+    players: game.players,
+    responses: game.responses,
+  }
+}
+
+// function renderGameStateJson(game) {
+//   return {
+//     gameId: game.gameId,
+//     openQuestionId: game.openQuestionId,
+//     responses: game.responses,
+//   }
+// }
+
 module.exports = {
-  updateGameState
+  updateGameState,
+  renderGameJson,
 }

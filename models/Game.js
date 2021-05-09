@@ -10,6 +10,12 @@ const GameSchema = new mongoose.Schema({
   gameId: {
     type: mongoose.Schema.Types.String,
     indexed: true,
+    unique: true,
+  },
+  // The passcode for admin.
+  // Guards questions, playerRegex, playerRegexMessage
+  adminCode: {
+    type: mongoose.Schema.Types.String,
   },
   questions: {
     type: [QuestionSchema]
@@ -24,6 +30,7 @@ const GameSchema = new mongoose.Schema({
     default: null,
   },
   // All the players that have ever joined.
+  // Use `$addToSet` to avoid duplicates and overwriting!!
   players: {
     type: [mongoose.Schema.Types.String],
   },
@@ -40,27 +47,24 @@ const GameSchema = new mongoose.Schema({
     }
   }
   */
-  gameState: {
-    version: {
-      type: mongoose.Schema.Types.Number,
-      default: 0,
-    },
-    openQuestionId: {
-      type: mongoose.Schema.Types.String,
-      default: null,
-    },
-    // players: { type: [mongoose.Schema.Types.String] },
-    // offline: { type: [mongoose.Schema.Types.String] },
-    responses: {
-      type: mongoose.Schema.Types.Object,
-      default: {},
-    },
-  },
-  adminCode: {
+  openQuestionId: {
     type: mongoose.Schema.Types.String,
+    default: null,
   },
+  // Key questionId to value response arrays {"a":[...],"b":[...]},
+  // use `$addToSet` and `$pull` to avoid duplicates and overwriting!!
+  responses: {
+    type: mongoose.Schema.Types.Object,
+    default: {},
+  },
+  // gameState: { // All the fields that should be covered under optimistic locking with the version number.
+  //   version: {
+  //     type: mongoose.Schema.Types.Number,
+  //     default: 0,
+  //   },
+  // },
 }, {
-  timestamps: true,
+  timestamps: true, // createdAt, updatedAt
 })
 
 module.exports = mongoose.model('game', GameSchema)
