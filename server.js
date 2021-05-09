@@ -103,6 +103,7 @@ app.post('/:id/join', async (req, res) => {
 
   res.redirect('/' + gameId + '/play?' + uriParams)
 })
+
 app.get('/:id/manage-:adminCode', async (req, res) => {
   const game = await Game.findOne({ gameId: req.params.id, adminCode: req.params.adminCode })
   if (!game) { return res.redirect('/' + req.params.id) }
@@ -115,6 +116,7 @@ app.get('/:id/manage-:adminCode', async (req, res) => {
   })
   res.end(markup)
 })
+
 app.get('/:id/present', (req, res) => {
   const markup = getMarkup({
     page: 'present',
@@ -122,16 +124,26 @@ app.get('/:id/present', (req, res) => {
   })
   res.end(markup)
 })
-app.get('/:id/play', (req, res) => {
+
+app.get('/:id/play', async (req, res) => {
+  const player = req.query.player
+  const name = req.query.name
+  const game = await Game.findOne({ gameId: req.params.id })
+
+  if (!game) { res.redirect('/') }
   const markup = getMarkup({
     page: 'play',
-    testInfo: crypto.randomUUID(),
+    player,
+    name,
+    ...renderGameJson(game),
   })
   res.end(markup)
 })
+
 app.get('/:id/:adminCode', (req, res) => {
   res.redirect(`/${req.params.id}/manage-${req.params.adminCode}`)
 })
+
 app.get('/:id', async (req, res) => {
   const game = await Game.findOne({ gameId: req.params.id })
   if (!game) { return res.redirect('/') }
@@ -159,29 +171,83 @@ const wss = new WebSocket.Server({
 const fakeGameState = { "gameId": "spend-example", "questions": [ { "_id": "60962f0cf716f1e38a9dd710", "text": "Hot or cold?" }, { "_id": "60963534ef26be0015f13bc2", "text": "Coffee or tea?" } ], "gameState": { "version": 172, "activeQuestionId": "60963534ef26be0015f13bc2", "players": [ "p1 <p1@wepay.com>", "p2 <p2@wepay.com>", "p3 <p3@wepay.com>", "p4 <p4@wepay.com>", "p6 <p6@wepay.com>", "p5 <p5@wepay.com>", "p7 <p7@wepay.com>", "p8 <p8@wepay.com>", "p9 <p9@wepay.com>" ], "offline": [ "p2 <p2@wepay.com>", "p3 <p3@wepay.com>" ], "responses": { "60962f0cf716f1e38a9dd710": { "a": [ "p5 <p5@wepay.com>", "p8 <p8@wepay.com>", "p7 <p7@wepay.com>", "p9 <p9@wepay.com>" ], "b": [ "p1 <p1@wepay.com>", "p2 <p2@wepay.com>" ] }, "60963534ef26be0015f13bc2": { "a": [], "b": [] } } }, "createdAt": "2021-05-08T06:24:10.300Z", "updatedAt": "2021-05-08T07:07:14.507Z" }
 
 wss.on('connection', function connection(ws) {
-  console.log('connected', ws.id);
-  ws.on('message', function incoming(message) {
+  ws.on('close', async function(message) {
+    console.log(message)
+    try {
+      manager.removePlayer(ws.gameId, ws.player)
+      const game = await Game.findOne({ gameId: ws.gameId })
+      const update = {
+        event: 'update',
+        online: manager.getPlayers(ws.gameId).map((c) => {
+          return {
+            player: c.player,
+            name: c.name,
+            lastMessageTime: c.lastMessageTime,
+          }
+        }),
+        ...renderGameJson(game),
+      }
+      const message = JSON.stringify(update)
+      manager.getPlayers(ws.gameId).forEach((c) => c.send(message))
+    } catch (err) {
+      console.error('Failed to handle close', ws.gameId, ws.player)
+    }
+  })
+
+  ws.on('message', async function incoming(message) {
     console.log('received: %s', message);
     try {
       const msg = JSON.parse(message)
-      ws.send(JSON.stringify({
-        event: 'response',
-        messageId: msg.messageId,
-        room: msg.room,
-        message: msg.message,
-        gameState: fakeGameState,
-      }));
+      if (msg.event === 'join') {
+        const { gameId, player, name } = msg
+        const game = await Game.findOne({ gameId })
+        if (!game) {
+          ws.send({ event: 'error', error: 'Game not found' })
+          return
+        }
+        if (manager.hasPlayer(gameId, msg)) {
+          // pass
+          console.log('Game already has player!', gameId, player, name)
+        } else {
+          // addPlayer: (gameId, player, name, lastMessageTime, ws) => {
+          manager.addPlayer(gameId, player, name, Date.now(), ws)
+        }
+        const update = {
+          event: 'update',
+          online: manager.getPlayers(gameId).map((c) => {
+            return {
+              player: c.player,
+              name: c.name,
+              lastMessageTime: c.lastMessageTime,
+            }
+          }),
+          ...renderGameJson(game),
+        }
+        const message = JSON.stringify(update)
+        manager.getPlayers(gameId).forEach((c) => c.send(message))
+      } else {
+        console.warn('Unrecognized event', msg)
+      }
+      // ws.send(JSON.stringify({
+      //   event: 'response',
+      //   messageId: msg.messageId,
+      //   room: msg.room,
+      //   message: msg.message,
+      //   gameState: fakeGameState,
+      // }));
     } catch (err) {
       console.error('failed to parse message', message);
     }
   });
 
-  ws.send(JSON.stringify({
-    event: 'ping',
-    messageId: Date.now(),
-    room: null,
-    message: fakeGameState,
-  }));
+  setTimeout(() => {
+    ws.send(JSON.stringify({
+      event: 'ping',
+      messageId: Date.now(),
+      room: null,
+      message: fakeGameState,
+    }));
+  }, 2000)
 });
 
 // setInterval(() => {

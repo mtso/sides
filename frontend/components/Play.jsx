@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import superagent from 'superagent'
 
 import { pick } from '../../util'
+import Game from '../Game'
 
 export default class Play extends Component {
   constructor(props) {
@@ -12,6 +13,8 @@ export default class Play extends Component {
       questions: [],
     }
     // this.manager = new Manager(this.props.gameId)
+
+    this.game = new Game(this.props.gameId)
   }
 
   componentDidMount() {
@@ -19,6 +22,11 @@ export default class Play extends Component {
     // this.manager.on('update', (gameState) => {
     //   this.setState(pick(gameState, Object.keys(this.state)))
     // })
+
+    this.game.join(this.props.player, this.props.name)
+    this.game.on('update', (event) => console.log('Event:update', event))
+    this.game.on('ping', (event) => console.log('Event:ping', event))
+    this.game.on('response', (event) => console.log('Event:response', event))
   }
 
   render() {

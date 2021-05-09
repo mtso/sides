@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import superagent from 'superagent'
 
+import Game from '../Game'
+
 export default class Manage extends Component {
   constructor(props) {
     super(props)
@@ -14,7 +16,9 @@ export default class Manage extends Component {
       players: [],
       responses: {},
       newQuestionValue: '',
+      online: [],
     }
+    this.game = new Game(this.props.gameId)
   }
 
   async componentDidMount() {
@@ -23,6 +27,13 @@ export default class Manage extends Component {
     this.setState({
       questions, openQuestionId, players, responses,
       playerRegex, newPlayerRegex:playerRegex, playerRegexMessage, newPlayerRegexMessage:playerRegexMessage })
+    
+    this.game.join('admin', 'admin')
+    this.game.on('update', (event) => {
+      this.setState({
+        online: event.online,
+      })
+    })
   }
 
   async addQuestion(text) {
@@ -174,6 +185,21 @@ export default class Manage extends Component {
                     return (
                       <li key={player}
                       >{player}</li>
+                    )
+                  })
+                }
+              </ul>
+            {/*</div>*/}
+
+            {/*<div className="col" style={{minWidth: '300px', maxWidth:'300px'}}>*/}
+              <h3>Online</h3>
+              <ul>
+                {
+                  (this.state.online || []).map((p) => {
+                    {/*const isOffline = !!offlineMap[player]*/}
+                    return (
+                      <li key={p.player}
+                      >{p.player} ({p.name})</li>
                     )
                   })
                 }

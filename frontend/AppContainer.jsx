@@ -13,14 +13,18 @@ export default class AppContainer extends React.Component {
     if (this.props.page === 'lobby') {
       return (
         <Lobby
-          gameId={this.props.gameId} adminCode={this.props.adminCode}
-          playerRegex={this.props.playerRegex} playerRegexMessage={this.props.playerRegexMessage}
+          gameId={this.props.gameId}
+          playerRegex={this.props.playerRegex}
+          playerRegexMessage={this.props.playerRegexMessage}
         />
       )
     } else if (this.props.page === 'play') {
+      console.log(this.props)
       return (
         <Play
-          gameId={this.props.gameId} adminCode={this.props.adminCode}
+          gameId={this.props.gameId}
+          player={this.props.player}
+          name={this.props.name}
         />
       )
     }

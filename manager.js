@@ -6,11 +6,17 @@ function parseMessage(msg) {
   }
 }
 
+// manager.getPlayers().forEach((ws) => ws.send(JSON.stringify({
+//   event: 'update',
+//   game: game,
+// })))
+
 function makeManager2() {
   const store = {}
 
   return {
     hasPlayer: (gameId, player) => {
+      if (!gameId || !player) { return false }
       const clients = store[gameId] || []
       return clients.some((c) => c.player===player)
     },
@@ -22,6 +28,13 @@ function makeManager2() {
       ws.lastMessageTime = lastMessageTime
       store[gameId] = clients.filter((c) => c.player!==player).concat([ ws ])
       return ws
+    },
+    presentPlayer: (gameId, player, lastMessageTime) => {
+      (clients[gameId] || []).forEach((c) => {
+        if (c.player === player) {
+          c.lastMessageTime = lastMessageTime
+        }
+      })
     },
     removePlayer: (gameId, player) => {
       if (!store[gameId]) { return }
