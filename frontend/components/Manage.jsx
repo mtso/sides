@@ -101,7 +101,7 @@ export default class Manage extends Component {
                     Bookmark the admin link <a href={"/" + this.props.gameId + "/manage-" + this.props.adminCode}>{location.host}{"/" + this.props.gameId + "/manage-" + this.props.adminCode}</a>
                   </div>
                   <div>
-                    <a href={"/" + this.props.gameId + `/data-v${(this.state || {}).version}.json`} download>Download the JSON data for questions and responses.</a>
+                    <a href={"/" + this.props.gameId + `/data.json`} download>Download the JSON data for questions and responses.</a>
                   </div>
                   <div>
                     <form onSubmit={(e) => {

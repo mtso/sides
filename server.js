@@ -8,7 +8,7 @@ const WebSocket = require('ws')
 
 const Game = require('./models/Game')
 const { getMarkup } = require('./frontend')
-const { pick } = require('./util')
+const { pick, getKeyFromPlayer, getPlayerFromKey } = require('./util')
 const { renderGameJson } = require('./game')
 const { makeManager2 } = require('./manager')
 
@@ -27,15 +27,6 @@ app.use('/', express.static('public'))
 
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
-
-app.use(function (err, req, res, next) {
-  if (!err.code || err.code >= 500) {
-    console.error('Unrecognized error!', err.stack)
-    res.status(500).json({ error: 'Internal server error' })
-  } else {
-    res.status(err.code).json({ error: err.message })
-  }
-})
 
 function makeWebError(status, message) {
   const err = new Error(message)
@@ -135,7 +126,11 @@ app.post('/:id/join', async (req, res) => {
 
   const newGame = await Game.findOneAndUpdate({ gameId }, {
     $addToSet: { players: player },
-  }, { new: true, upsert: false })
+    $set: {
+      [`playerInfo.${getKeyFromPlayer(player)}.player`]: player,
+      [`playerInfo.${getKeyFromPlayer(player)}.name`]: name,
+    },
+  }, { new: true, upsert: true })
 
   // res.json({
   //   player,
@@ -157,6 +152,13 @@ app.get('/:id/manage-:adminCode', async (req, res) => {
     testInfo: generateWordId(),
   })
   res.end(markup)
+})
+
+app.get('/:id/data.json', async (req, res) => {
+  const game = await Game.findOne({ gameId: req.params.id })
+  if (!game) { res.redirect('/') }
+  res.set('content-type', 'application/json')
+  res.end(JSON.stringify(renderGameJson(game), null, 2))
 })
 
 app.get('/:id/present', async (req, res) => {
@@ -202,9 +204,19 @@ app.get('/:id', async (req, res) => {
 app.get('/', (req, res) => {
   const markup = getMarkup({
     page: 'index',
-    testInfo: crypto.randomUUID(),
+    newGameId: generateWordId(),
   })
   res.end(markup)
+})
+
+app.use(function (err, req, res, next) {
+  console.log('handling error')
+  if (!err.code || err.code >= 500) {
+    console.error('Unrecognized error!', err.stack)
+    res.status(500).json({ error: 'Internal server error' })
+  } else {
+    res.status(err.code).json({ error: err.message })
+  }
 })
 
 const server = http.createServer(app);
@@ -215,7 +227,6 @@ const wss = new WebSocket.Server({
 
 wss.on('connection', function connection(ws) {
   ws.on('close', async function(message) {
-    console.log(message)
     try {
       manager.removePlayer(ws.gameId, ws.player)
       const game = await Game.findOne({ gameId: ws.gameId })
@@ -260,7 +271,6 @@ wss.on('connection', function connection(ws) {
 });
 
 server.on('upgrade', function (request, socket, head) {
-  console.log('Parsing upgrade request...');
   wss.handleUpgrade(request, socket, head, function (ws) {
     wss.emit('connection', ws, request);
   });

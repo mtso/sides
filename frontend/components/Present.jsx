@@ -2,6 +2,8 @@ import * as React from 'react'
 import superagent from 'superagent'
 import * as d3 from 'd3'
 import Force from './Force'
+import Force2 from './Force2'
+import Force3 from './Force3'
 
 import Game from '../Game'
 import { pick } from '../../util'
@@ -82,17 +84,32 @@ export default class Present extends React.Component {
 
     return (
       <>
-      <h1>
-        Which Side Are You On?
-      </h1>
-      {/*<Graph />*/}
-      <div>
-      <Force nodes={nodesA} width={'40%'}/>
-      <Force nodes={nodesF} width={'19%'}/>
-      <Force nodes={nodesB} width={'40%'}/>
+      <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+        <div>
+        <h1 style={{textAlign: 'center'}}>
+          Which Side Are You On?
+        </h1>
+        </div>
+        {/*<Graph />*/}
+        {/*<div style={{flex: 2}}>
+          <Force3 nodes={nodesA} width={'40%'}/>
+          <Force3 nodes={nodesF} width={'20%'}/>
+          <Force3 nodes={nodesB} width={'40%'}/>
+        </div>*/}
+        <div style={{flex: 2}}>
+          <Force2 nodes={nodesA} width={'40%'}/>
+          <Force2 nodes={nodesF} width={'20%'}/>
+          <Force2 nodes={nodesB} width={'40%'}/>
+        </div>
+        {/*<div style={{flex: 2}}>
+          <Force nodes={nodesA} width={'40%'}/>
+          <Force nodes={nodesF} width={'20%'}/>
+          <Force nodes={nodesB} width={'40%'}/>
+        </div>*/}
       </div>
+
       <pre>
-        {JSON.stringify(this.state.gameState, null, 2)}
+        {JSON.stringify(this.state, null, 2)}
       </pre>
       </>
     )

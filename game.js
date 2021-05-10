@@ -56,6 +56,7 @@ function renderGameJson(game) {
     playerRegex: game.playerRegex,
     openQuestionId: game.openQuestionId,
     players: game.players,
+    playerInfo: game.playerInfo,
     responses: game.responses,
   }
 }

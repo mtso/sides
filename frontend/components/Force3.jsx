@@ -1,7 +1,7 @@
 import React, { Component, createRef } from "react";
 import * as d3 from "d3";
 
-export default class Force extends Component {
+export default class Force3 extends Component {
   constructor(props) {
     super(props);
     this.ref = createRef();
@@ -56,9 +56,11 @@ export default class Force extends Component {
   restart() {
     // const color = d3.scaleOrdinal(d3.schemeCategory10);
     // Apply the general update pattern to the nodes.
+    this.node.exit().remove();
     this.node = this.node.data(this.props.nodes, function (d) {
       return d.name;
     });
+    
     // if (!this.done) {
     //   this.done = true
     //   this.node.exit()
@@ -84,9 +86,10 @@ export default class Force extends Component {
 
     console.log(this.node)
 
+    this.node = root
+
     this.node.exit().remove();
 
-    this.node = root
 
 
 

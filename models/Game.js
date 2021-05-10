@@ -35,6 +35,18 @@ const GameSchema = new mongoose.Schema({
     type: [mongoose.Schema.Types.String],
   },
   /*
+  playerInfo: {
+    <player>: {
+      name: 'asdf',
+      lastPingTs: 92108210,
+    }
+  }
+  */
+  playerInfo: {
+    type: mongoose.Schema.Types.Object,
+    default: {},
+  },
+  /*
   gameState: {
     version: 0 // used for optimistic locking.
     activeQuestionId: <id>,

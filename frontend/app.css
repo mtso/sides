@@ -5,6 +5,10 @@ html, body, div {
   padding: 0;
 }
 
+html, body, #app {
+  height: 100%;
+}
+
 /* Layout */ 
 .container {
   margin: 0.6em;
@@ -50,4 +54,8 @@ input[type="password"].control,
 input[type="email"].control,
 input[type="text"].control {
   padding: 0.05em 0.3em;
+}
+
+details[open] > summary {
+  border-bottom: 1px solid lightgray;
 }

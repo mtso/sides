@@ -7,6 +7,16 @@ function pick(obj, keys) {
   }, {})
 }
 
+function getKeyFromPlayer(player) {
+  return encodeURIComponent(player).replace(/\./g, '%2E')
+}
+
+function getPlayerFromKey(key) {
+  return decodeURIComponent(key.replace(/%2E/g, '.'))
+}
+
 module.exports = {
   pick,
+  getKeyFromPlayer,
+  getPlayerFromKey,
 }

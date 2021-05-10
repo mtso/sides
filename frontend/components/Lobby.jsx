@@ -10,6 +10,18 @@ export default class Lobby extends Component {
     }
 
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.savePlayerData = this.savePlayerData.bind(this)
+    this.getPlayerData = this.getPlayerData.bind(this)
+  }
+
+  componentDidMount() {
+    const data = this.getPlayerData()
+    if (data && data.createdAt >= (Date.now() - 30 * 60 * 1000)) {
+      this.setState({
+        player: data.player,
+        name: data.name,
+      })
+    }
   }
 
   async handleSubmit(e) {
@@ -20,16 +32,24 @@ export default class Lobby extends Component {
     else if (!this.state.name) {
       e.preventDefault()
     }
-    // else {
-    //   e.preventDefault()
-    //   const { player, name } = this.state
-    //   const resp = await superagent.post('/' + this.props.gameId + '/join')
-    //     .send({ player, name })
-    //   console.log(resp)
-    //   // if (resp.player) {
-    //   window.location.href = `/${this.props.gameId}/play?player=${encodeURIComponent(player)}&name=${encodeURIComponent(name)}`
-    //   // }
-    // }
+    this.savePlayerData(this.state.player, this.state.name)
+  }
+
+  savePlayerData(player, name) {
+    const key = `sides:${this.props.gameId}:player`
+    localStorage.setItem(key, JSON.stringify({ player, name, createdAt: Date.now() }))
+  }
+
+  getPlayerData() {
+    const key = `sides:${this.props.gameId}:player`
+    const data = localStorage.getItem(key)
+    if (!data) return null;
+    try {
+      return JSON.parse(data)
+    } catch(err) {
+      console.error('failed to parse local data', err, data)
+      return null
+    }
   }
 
   render() {
@@ -46,6 +66,7 @@ export default class Lobby extends Component {
               name="player"
               type="text"
               className="control"
+              value={this.state.player}
               placeholder="Player ID"
               onChange={(e) => this.setState({ player: e.target.value })}
               style={{marginBottom: '0.2em'}}
@@ -64,6 +85,7 @@ export default class Lobby extends Component {
               name="name"
               type="text"
               className="control"
+              value={this.state.name}
               placeholder="Player Name"
               onChange={(e) => this.setState({ name: e.target.value })}
             />
