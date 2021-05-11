@@ -27,8 +27,7 @@ export default class Game extends EventEmitter {
 
   async connectWs() {
     if (this.ws) {
-      this.ws.onerror = this.ws.onopen = this.ws.onclose = null
-      this.ws.close()
+      this.closeWs()
     }
 
     const start = Date.now()
@@ -77,31 +76,37 @@ export default class Game extends EventEmitter {
       name,
       gameId: this.gameId,
     }))
+
     this.monitorTimer = setInterval(async () => {
       if (this.isJoined) {
         if (!this.ws) {
           try {
-            console.log('Checking if a connection can be established')
-            await this.getWs()
-            // ws.send(JSON.stringify({event:'ping', player, name, gameId: this.gameId}))
+            console.log('Unconnected, checking if a connection can be established')
+            // await this.getWs()
+            const ws = await this.getWs()
+            ws.send(JSON.stringify({
+              event: 'join',
+              player,
+              name,
+              gameId: this.gameId,
+            }))
           } catch(err) {
             console.warn(err)
           }
         }
         else {
-          console.log('pinging server')
+          // console.log('pinging server')
           const ws = await this.getWs()
           if (ws.readyState === CLOSING || ws.readyState === CLOSED) {
+            console.log('Server connection closing or closed, removing ws')
             this.ws = null
-            console.log('removing ws')
-            return
           }
-          try {
-            ws.send(JSON.stringify({event:'ping', player, name, gameId: this.gameId}))
-          } catch(err) {
-            this.ws = null
-            console.warn('failed to ping')
-          }
+          // try {
+          //   ws.send(JSON.stringify({event:'ping', player, name, gameId: this.gameId}))
+          // } catch(err) {
+          //   this.ws = null
+          //   console.warn('Failed to ping')
+          // }
         }
       }
     }, 5000)

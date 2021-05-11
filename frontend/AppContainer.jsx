@@ -33,6 +33,7 @@ export default class AppContainer extends React.Component {
           gameId={this.props.gameId}
           players={this.props.players}
           responses={this.props.responses}
+          debug={this.props.debug}
         />
       )
     }

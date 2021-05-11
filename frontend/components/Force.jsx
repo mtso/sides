@@ -1,117 +1,82 @@
 import React, { Component, createRef } from "react";
 import * as d3 from "d3";
 
+import { toMap } from '../../util'
+
 export default class Force extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      nodes: [],
+    }
     this.ref = createRef();
-    this.restart = this.restart.bind(this);
+    this.update = this.update.bind(this);
   }
 
   componentDidMount() {
-    var svg = d3.select(this.ref.current)
-    const boundingRect = svg.node().getBoundingClientRect()
-    console.log('box: ', svg.node().getBoundingClientRect())
+    const svg = d3.select(this.ref.current)
+    const { width, height } = svg.node().getBoundingClientRect()
+    this.width = width
 
-    var width = boundingRect.width // 500
-    var height = boundingRect.height // 500
+    const container = svg.append('g')
+      .attr("transform", "translate(" + width/2 + "," + height/2 + ")")
+    this.node = container.selectAll('g') // meaningless selectAll?
 
-    this.simulation = d3
-      .forceSimulation(this.props.nodes)
-      .alphaTarget(0.73)
-      .velocityDecay(.95)
+    this.simulation = d3.forceSimulation(this.props.nodes, (d) => d.player)
+      .alphaTarget(0.5)
+      .velocityDecay(0.95)
       .force("x", d3.forceX().strength(0.51))
       .force("y", d3.forceY().strength(0.51))
-      .force(
-        "collide",
-        d3.forceCollide().radius((d) => d.r + 1).iterations(3)
-      )
-      .force(
-        "charge",
-        d3.forceManyBody().strength((d, i) => (i ? 0 : (-width * 2) / 3))
-      )
+      .force("collide", d3.forceCollide().radius((d) => d.r + 1).iterations(3))
+      .force('charge', d3.forceManyBody()
+             .strength((d, i) => (i ? 0 : (-width * 2) / 3)))
       .on('tick', () => {
-        this.node
-        .attr('transform', (d) => `translate(${d.x},${d.y})`)
+        this.node.attr('transform', (d) => `translate(${d.x},${d.y})`)
       })
 
+    this.update()
+  }
 
-    const g = svg
-        .append("g")
-        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+  componentDidUpdate(prevProps, prevSate) {
+    this.update()
+  }
 
-    this.node = g
-      .append("g")
-      .attr("stroke", "#fff")
+  update() {
+    const existing = toMap(this.node.data(), (d) => d.player)
+    const newNodes = (this.props.nodes || []).map((p) =>
+      existing[p.player] || ({
+        ...p,
+        x: this.props.side*this.width / 2,
+        y: Math.floor(Math.random() * 50)- 25
+      }))
+
+    const node = this.node.data(newNodes, (d) => d.player)
+    node.exit().remove()
+
+    const nodeEnter = node.enter().append('g')
+    nodeEnter.append('circle')
+      .attr('fill', 'white')
+      .attr("stroke", "blue")
       .attr("stroke-width", 1.5)
-      .selectAll(".node");
-
-    this.restart();
-  }
-
-  componentDidUpdate(nextProps, nextState) {
-    this.restart()
-  }
-
-  restart() {
-    // const color = d3.scaleOrdinal(d3.schemeCategory10);
-    // Apply the general update pattern to the nodes.
-    this.node = this.node.data(this.props.nodes, function (d) {
-      return d.name;
-    });
-    // if (!this.done) {
-    //   this.done = true
-    //   this.node.exit()
-    // }
-
-    const root = this.node
-      .enter()
-      .append("g")
-
-    root.append('circle')
-      .attr("fill", 'white')
-      .attr('stroke', 'blue')
-      .attr('stroke-width', '2px')
-      .attr("r", (d) => d.r)
-
-    root.append('text')
-      .attr('fill', 'black')
-      .attr('stroke', 'black')
-      .attr('stroke-width', '0')
-      // .attr('class', 'name')
+      .attr('r', 20)
+    nodeEnter.append('text')
       .attr('text-anchor', 'middle')
-      .text((d) => d.name)
+      .attr('alignment-baseline', 'middle')
+      .attr('fill', 'black')
+      .text(d => d.name)
 
-    console.log(this.node)
-
-    this.node.exit().remove();
-
-    this.node = root
-
-
-
-    //.exit() //.merge(this.node);
-
-    // Update and restart the simulation.
-    this.simulation.nodes(this.props.nodes); //.start();
-
-    // this.simulation.force("link").links(this.state.links);
-    // this.simulation.alpha(1).restart();
-    this.simulation.restart();
-    // this.simulation.start();
-    // this.simulation.force().start();
+    this.node = node.merge(nodeEnter)
+    this.simulation.nodes(newNodes, (d) => d.player).restart();
   }
 
   render() {
     return (
-      <>
-        <svg
-          width={this.props.width}
-          ref={this.ref}
-          style={{ outline: "1px solid #000", height: '100%' }}
-          xmlns="http://www.w3.org/2000/svg"
-        ></svg>
-      </>
+      <svg
+        width={this.props.width}
+        ref={this.ref}
+        style={{ outline: "1px solid #000", height: '100%' }}
+        xmlns="http://www.w3.org/2000/svg"
+      ></svg>
     );
   }
 }

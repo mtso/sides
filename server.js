@@ -98,11 +98,22 @@ app.post('/api/games/:id/choose', async (req, res) => {
 })
 
 app.get('/api/games/:id', async (req, res) => {
-  const game = await Game.findOne({ gameId: req.params.id })
-  if (!game) {
-    throw makeWebError(404, 'Not found')
+  const gameId = req.params.id
+  const game = await Game.findOne({ gameId })
+  if (!game) { throw makeWebError(404, 'Not found') }
+
+  const gameJson = renderGameJson(game)
+  if (req.query.show_online && req.query.show_online == 'true') {
+    gameJson.online = manager.getPlayers(gameId)
+      .filter((c) => !['admin', 'present'].includes(c.player))
+      .map((c) => pick(c, ['player', 'name', 'lastMessageTime']))
+      //  (c) => ({
+      //   player: c.player,
+      //   name: c.name,
+      //   lastMessageTime: c.lastMessageTime,
+      // }))
   }
-  res.json(renderGameJson(game))
+  res.json(gameJson)
 })
 
 app.post('/:id/join', async (req, res) => {
@@ -166,6 +177,7 @@ app.get('/:id/present', async (req, res) => {
 
   if (!game) { res.redirect('/') }
   const markup = getMarkup({
+    ...req.query,
     page: 'present',
     ...renderGameJson(game),
   })
