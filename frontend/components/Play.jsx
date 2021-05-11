@@ -3,6 +3,7 @@ import superagent from 'superagent'
 
 import { pick } from '../../util'
 import GameEvents from '../GameEvents'
+import { styleText } from '../colors'
 
 export default class Play extends Component {
   constructor(props) {
@@ -10,6 +11,9 @@ export default class Play extends Component {
     this.state = {
       openQuestionId: null,
       questions: [],
+      backgroundColorLeft: null,
+      backgroundColorMiddle: null,
+      backgroundColorRight: null,
     }
 
     this.game = new GameEvents(this.props.gameId)
@@ -17,11 +21,8 @@ export default class Play extends Component {
 
   componentDidMount() {
     this.game.join(this.props.player, this.props.name)
-    this.game.on('update', ({ openQuestionId, questions }) => {
-      this.setState({
-        openQuestionId,
-        questions,
-      })
+    this.game.on('update', (event) => {
+      this.setState(pick(event, Object.keys(this.state)))
     })
   }
 
@@ -41,7 +42,7 @@ export default class Play extends Component {
     return (
       <div class="container">
         <div>
-          <h3>Question: {question && question.text}</h3>
+          <h3>Question: {question && styleText(question.text, this.state)}</h3>
         </div>
         <div>
           <button

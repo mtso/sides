@@ -3,6 +3,7 @@ import superagent from 'superagent'
 
 import GameEvents from '../GameEvents'
 import { pick, toMap, getKeyFromPlayer } from '../../util'
+import { styleText } from '../colors'
 
 export default class Manage extends Component {
   constructor(props) {
@@ -63,7 +64,7 @@ export default class Manage extends Component {
       newBackgroundColorRight: resp.body.backgroundColorRight,
       newRadius: resp.body.radius,
     })
-    
+
     this.game.join('admin', 'admin')
     this.game.on('update', (event) => {
       this.setState(pick(event, Object.keys(this.state)))
@@ -286,6 +287,7 @@ export default class Manage extends Component {
                   (this.state.questions || []).map((q) => {
                     const isOpen = q._id === this.state.openQuestionId
                     const isEditing = this.state.editQuestionId === q._id
+
                     return (
                       <li key={q._id}>
                         <button
@@ -314,14 +316,14 @@ export default class Manage extends Component {
                             className='control'
                             onClick={(e) => this.updateQuestion(this.state.editQuestionId, this.state.editQuestionValue)}
                           >Save</button>
-                          </>
+                          </> 
                           :
                           <span
                           style={{
                             color: isOpen ? 'indigo' : 'inherit',
                             marginRight: '0.3em'
                           }}
-                        >{isOpen && '> '}{q.text}</span>
+                        >{isOpen && '> '}{styleText(q.text, this.state)}</span>
                         }
 
                         { this.state.responses[q._id] && (

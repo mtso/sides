@@ -4,6 +4,7 @@ import superagent from 'superagent'
 import Force from './Force'
 import GameEvents from '../GameEvents'
 import { pick, toMap, getKeyFromPlayer } from '../../util'
+import { styleText } from '../colors'
 
 export default class Present extends Component {
   constructor(props) {
@@ -101,7 +102,7 @@ export default class Present extends Component {
           marginTop: 0,
         }}
         >
-          { question && question.text || '...' }
+          { question && styleText(question.text, this.state) || '...' }
         </h1>
         </div>
         <div style={{flex: 2}}>
