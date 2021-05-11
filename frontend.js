@@ -11,6 +11,7 @@ function getMarkup(params) {
         <script type="text/javascript">
             window.appData = ${JSON.stringify(params, null, 2).replace(/</g, '\\u003c')};
         </script>
+        ${params.page === 'present' ? '<style>html{height:100%}</style>' : ''}
     </head>
     <body>
         <div id="app">
