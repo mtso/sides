@@ -39,6 +39,8 @@ export default class Manage extends Component {
 
       editQuestionId: null,
       editQuestionValue: '',
+
+      bulkQuestionData: '',
     }
 
     this.game = new GameEvents(this.props.gameId)
@@ -46,6 +48,7 @@ export default class Manage extends Component {
     this.hasChangesToSave = this.hasChangesToSave.bind(this)
     this.saveOptions = this.saveOptions.bind(this)
     this.updateQuestion = this.updateQuestion.bind(this)
+    this.importQuestions = this.importQuestions.bind(this)
   }
 
   async componentDidMount() {
@@ -161,6 +164,20 @@ export default class Manage extends Component {
     })
   }
 
+  async importQuestions(gameData) {
+    try {
+      const data = JSON.parse(gameData)
+      const questions = data.questions
+      if (!questions) return;
+      const resp = await superagent.post('/api/games/' + this.props.gameId)
+        .query({ adminCode: this.props.adminCode })
+        .send({ questions })
+      this.setState({ questions: resp.body.questions })
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   render() {
     const onlineMap = toMap(this.state.online, (p) => p.player)
     const onlineList = this.state.players.filter((p) => !!onlineMap[p]).map((p) => this.state.playerInfo[getKeyFromPlayer(p)])
@@ -259,6 +276,17 @@ export default class Manage extends Component {
                           disabled={!this.hasChangesToSave()}
                         />
                       </div>
+                    </form>
+                    <div>—</div>
+                    <form onSubmit={(e) => this.importQuestions(this.state.bulkQuestionData)}>
+                      <h4><label htmlFor="importData">Import Question Data</label></h4>
+                      <input id="importData" className='control' type="text" placeholder="JSON game data"
+                        value={this.state.bulkQuestionData}
+                        onChange={(e) => this.setState({ bulkQuestionData: e.target.value })}
+                      />
+                      <input className='control' type="submit" disabled={!this.state.bulkQuestionData} 
+                        value="Import and Overwrite Questions"
+                      />
                     </form>
                   </div>
                 </div>
