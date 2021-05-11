@@ -32,7 +32,8 @@ export default class GameEvents extends EventEmitter {
     }
 
     const start = Date.now()
-    this.ws = new this.WebSocketClient(`ws://${location.host}`);
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+    this.ws = new this.WebSocketClient(`${protocol}://${location.host}`);
     this.ws.onerror = (e) => {
       console.error('WebSocket error', e)
       this.emit('error', e)

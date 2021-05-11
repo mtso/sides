@@ -14,7 +14,10 @@ export default class Present extends Component {
       openQuestionId: null,
       online: [],
       players: [],
-      playerInfo: {}
+      playerInfo: {},
+      backgroundColorLeft: this.props.backgroundColorLeft,
+      backgroundColorMiddle: this.props.backgroundColorMiddle,
+      backgroundColorRight: this.props.backgroundColorRight,
     }
     this.game = new GameEvents(this.props.gameId)
   }
@@ -86,23 +89,33 @@ export default class Present extends Component {
       })
     }
 
+    const question = this.state.openQuestionId && this.state.questions.filter((q) => q._id === this.state.openQuestionId)[0]
+
     return (
       <>
       <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
         <div>
-        <h1 style={{textAlign: 'center'}}>
-          Which Side Are You On?
+        <h3 style={{textAlign: 'center', marginBottom: 0}}>
+          Which Side Are You On...
+        </h3>
+        <h1 style={{
+          textAlign: 'center',
+          color: question ? 'black' : 'lightgray',
+          marginTop: 0,
+        }}
+        >
+          { question && question.text || '...' }
         </h1>
         </div>
         <div style={{flex: 2}}>
           <Force nodes={nodesA} width={'40%'} side={1}
-            backgroundColor={this.props.backgroundColorLeft}
+            backgroundColor={this.state.backgroundColorLeft}
           />
           <Force nodes={nodesF} width={'20%'} side={0}
-            backgroundColor={this.props.backgroundColorMiddle}
+            backgroundColor={this.state.backgroundColorMiddle}
           />
           <Force nodes={nodesB} width={'40%'} side={-1}
-            backgroundColor={this.props.backgroundColorRight}
+            backgroundColor={this.state.backgroundColorRight}
           />
         </div>
       </div>

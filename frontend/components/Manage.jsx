@@ -34,7 +34,6 @@ export default class Manage extends Component {
     }
 
     this.game = new GameEvents(this.props.gameId)
-    this.clearOpenQuestion = this.clearOpenQuestion.bind(this)
     this.setOpenQuestion = this.setOpenQuestion.bind(this)
     this.hasChangesToSave = this.hasChangesToSave.bind(this)
     this.saveOptions = this.saveOptions.bind(this)
@@ -114,30 +113,21 @@ export default class Manage extends Component {
     })
   }
 
-  async clearOpenQuestion() {
-    const resp = await superagent.post('/api/games/' + this.props.gameId)
-      .query({ adminCode: this.props.adminCode })
-      .send({
-        openQuestionId: null,
-      })
-    const { openQuestionId } = resp.body
-    this.setState({ openQuestionId })
-  }
+  // async clearOpenQuestion() {
+  //   const resp = await superagent.post('/api/games/' + this.props.gameId)
+  //     .query({ adminCode: this.props.adminCode })
+  //     .send({ openQuestionId: null })
+  //   this.setState({ openQuestionId: resp.body.openQuestionId })
+  // }
 
-  async setOpenQuestion(id) {
-    console.log('opening q')
+  async setOpenQuestion(openQuestionId) {
     const resp = await superagent.post('/api/games/' + this.props.gameId)
       .query({ adminCode: this.props.adminCode })
-      .send({
-        openQuestionId: id,
-      })
-    const { openQuestionId } = resp.body
-    console.log(openQuestionId)
-    this.setState({ openQuestionId })
+      .send({ openQuestionId })
+    this.setState({ openQuestionId: resp.body.openQuestionId })
   }
 
   hasChangesToSave() {
-    console.log(this.state)
     return this.state.playerRegex !== this.state.newPlayerRegex
       || this.state.playerRegexMessage !== this.state.newPlayerRegexMessage
 
@@ -175,7 +165,6 @@ export default class Manage extends Component {
                     <form onSubmit={(e) => {
                       e.preventDefault()
                       this.saveOptions()
-                      {/*this.updatePlayerRegex(this.state.newPlayerRegex, this.state.newPlayerRegexMessage)*/}
                     }}>
                       <h4>Validate Player IDs (email)</h4>
                       <div>Player Regex: <input className="control" type="text"
@@ -250,7 +239,7 @@ export default class Manage extends Component {
               <div>
                 <button
                   className="control"
-                  onClick={(e) => this.clearOpenQuestion()}
+                  onClick={(e) => this.setOpenQuestion(null)}
                   disabled={this.state.openQuestionId===null}
                 >Close Question
                 </button>
