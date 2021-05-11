@@ -10,7 +10,7 @@ const Game = require('./models/Game')
 const { getMarkup } = require('./frontend')
 const { pick, getKeyFromPlayer, getPlayerFromKey } = require('./util')
 const { renderGameJson } = require('./game')
-const { makeManager2 } = require('./manager')
+const { makeManager } = require('./manager')
 
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
@@ -20,7 +20,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 }).then(() => console.log('MongoDB connected'))
 
 const app = express()
-const manager = makeManager2()
+const manager = makeManager()
 
 app.use('/static', express.static('frontend/dist'))
 app.use('/', express.static('public'))
@@ -33,6 +33,8 @@ function makeWebError(status, message) {
   err.code = status
   return err
 }
+
+/* API endpoints */
 
 app.post('/api/games/:id', async (req, res) => {
   const gameId = req.params.id
@@ -104,16 +106,33 @@ app.get('/api/games/:id', async (req, res) => {
 
   const gameJson = renderGameJson(game)
   if (req.query.show_online && req.query.show_online == 'true') {
-    gameJson.online = manager.getPlayers(gameId)
+    gameJson.online = (manager.getPlayers(gameId) || [])
       .filter((c) => !['admin', 'present'].includes(c.player))
-      .map((c) => pick(c, ['player', 'name', 'lastMessageTime']))
-      //  (c) => ({
-      //   player: c.player,
-      //   name: c.name,
-      //   lastMessageTime: c.lastMessageTime,
-      // }))
+      .map((c) => pick(c, ['player', 'name', 'lastMessageTime', 'clientId']))
   }
   res.json(gameJson)
+})
+
+/* UI endpoints */
+
+app.post('/new_game', async (req, res) => {
+  const gameId = req.body.gameId
+  if (!gameId) { return res.redirect('/') }
+  const adminCode = crypto.randomUUID().replaceAll('-', '')
+  let game
+  try {
+    game = await Game.create({ gameId, adminCode })
+  } catch (err) {
+    if (err.code === 11000) {
+      console.warn('Creating game hit dupe gameId with:', gameId)
+      return res.redirect('/?state=errorDupeGameId')
+    } else {
+      console.error('Failed to create game', err)
+      return res.redirect('/?state=errorUnexpected')
+    }
+  }
+
+  res.redirect('/' + gameId + '/manage-' + adminCode)
 })
 
 app.post('/:id/join', async (req, res) => {
@@ -187,9 +206,11 @@ app.get('/:id/present', async (req, res) => {
 app.get('/:id/play', async (req, res) => {
   const player = req.query.player
   const name = req.query.name
+  if (!player || !name) { return res.redirect('/' + req.params.id) }
+
   const game = await Game.findOne({ gameId: req.params.id })
 
-  if (!game) { res.redirect('/') }
+  if (!game) { return res.redirect('/') }
   const markup = getMarkup({
     page: 'play',
     player,
@@ -215,6 +236,7 @@ app.get('/:id', async (req, res) => {
 
 app.get('/', (req, res) => {
   const markup = getMarkup({
+    ...req.query,
     page: 'index',
     newGameId: generateWordId(),
   })
@@ -240,11 +262,11 @@ const wss = new WebSocket.Server({
 wss.on('connection', function connection(ws) {
   ws.on('close', async function(message) {
     try {
-      manager.removePlayer(ws.gameId, ws.player)
+      manager.removePlayer(ws.gameId, ws.clientId)
       const game = await Game.findOne({ gameId: ws.gameId })
-      manager.broadcastUpdate(gameId, renderGameJson(game))
+      manager.broadcastUpdate(ws.gameId, renderGameJson(game))
     } catch (err) {
-      console.error('Failed to handle close', ws.gameId, ws.player)
+      console.error('Failed to handle close', ws.gameId, ws.player, err)
     }
   })
 
@@ -264,13 +286,15 @@ wss.on('connection', function connection(ws) {
         ws.send({ event: 'error', error: 'Game not found' })
         return
       }
-      if (manager.hasPlayer(gameId, msg)) {
-        // pass
-        console.log('Game already has player!', gameId, player, name)
-      } else {
-        // addPlayer: (gameId, player, name, lastMessageTime, ws) => {
-        manager.addPlayer(gameId, player, name, Date.now(), ws)
-      }
+      manager.addPlayer(gameId, player, name, Date.now(), ws)
+      // if (manager.hasPlayer(gameId, msg)) {
+      //   // pass
+      //   console.log('Game already has player!', gameId, player, name)
+      //   manager.addPlayer(gameId, player, name, Date.now(), ws)
+      // } else {
+      //   // addPlayer: (gameId, player, name, lastMessageTime, ws) => {
+      //   manager.addPlayer(gameId, player, name, Date.now(), ws)
+      // }
       manager.broadcastUpdate(gameId, renderGameJson(game))
     }
     else if (msg.event === 'ping') {

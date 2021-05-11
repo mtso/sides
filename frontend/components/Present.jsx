@@ -1,12 +1,11 @@
-import * as React from 'react'
+import React, { Component } from 'react'
 import superagent from 'superagent'
-import * as d3 from 'd3'
 
 import Force from './Force'
 import Game from '../Game'
 import { pick, getKeyFromPlayer } from '../../util'
 
-export default class Present extends React.Component {
+export default class Present extends Component {
   constructor(props) {
     super(props)
     this.state = {

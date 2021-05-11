@@ -45,6 +45,7 @@ export default class Play extends Component {
 
   render() {
     const question = this.state.openQuestionId && this.state.questions.filter((q) => q._id === this.state.openQuestionId)[0]
+    const buttonMiddleTitle = this.props.buttonMiddleTitle || '🏝'
     return (
       <div class="container">
         <div>
@@ -53,13 +54,19 @@ export default class Play extends Component {
         <div>
           <button className="control"
             onClick={(e) => this.makeChoice('a')}
-          >Left</button>
+          >{this.props.buttonLeftTitle || 'Left'}</button>
           <button className="control"
             onClick={(e) => this.makeChoice(null)}
-          ><span style={{verticalAlign: "middle", fontSize: '1.05em'}}>🏝</span></button>
+          >
+          {
+            /\p{Extended_Pictographic}/u.test(buttonMiddleTitle)
+              ? <span style={{verticalAlign: "middle", fontSize: '1.05em'}}>{buttonMiddleTitle}</span>
+              : {buttonMiddleTitle}
+          }
+          </button>
           <button className="control"
             onClick={(e) => this.makeChoice('b')}
-          >Right</button>
+          >{this.props.buttonRightTitle || 'Right'}</button>
         </div>
       </div>
     )

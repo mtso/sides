@@ -1,5 +1,5 @@
-import React, { Component, createRef } from "react";
-import * as d3 from "d3";
+import React, { Component, createRef } from "react"
+import * as d3 from "d3"
 
 import { toMap } from '../../util'
 

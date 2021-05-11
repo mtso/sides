@@ -7,19 +7,22 @@ export default class Lobby extends Component {
     this.state = {
       player: '',
       name: '',
+      previousPlayer: null,
+      previousName: null,
     }
 
     this.handleSubmit = this.handleSubmit.bind(this)
     this.savePlayerData = this.savePlayerData.bind(this)
     this.getPlayerData = this.getPlayerData.bind(this)
+    this.rejoin = this.rejoin.bind(this)
   }
 
   componentDidMount() {
     const data = this.getPlayerData()
-    if (data && data.createdAt >= (Date.now() - 30 * 60 * 1000)) {
+    if (data) {//} && data.createdAt >= (Date.now() - 6 * 60 * 60 * 1000)) {
       this.setState({
-        player: data.player,
-        name: data.name,
+        previousPlayer: data.player,
+        previousName: data.name,
       })
     }
   }
@@ -47,21 +50,38 @@ export default class Lobby extends Component {
     try {
       return JSON.parse(data)
     } catch(err) {
-      console.error('failed to parse local data', err, data)
+      console.error('Failed to parse local data', err, data)
       return null
     }
+  }
+
+  rejoin() {
+    const { previousPlayer, previousName } = this.state
+    if (!previousPlayer) { return }
+
+    location.href = `/${this.props.gameId}/play?player=${encodeURIComponent(previousPlayer)}&name=${encodeURIComponent(previousName)}`
   }
 
   render() {
     return (
       <div className="container">
         <h3>{this.props.gameId}</h3>
+
+        { this.state.previousPlayer && <div>
+          <button className='control' onClick={this.rejoin}>
+            Re-join as {this.state.previousName} ({this.state.previousPlayer})
+          </button>
+          <div>—
+          </div>
+        </div> }
+
         <form
           method="POST" action={`/${this.props.gameId}/join`}
           onSubmit={this.handleSubmit}
         >
           <div>
-            <label htmlFor="player">Player ID</label> <input
+            <label htmlFor="player" style={{marginRight: '0.3em'}}>Player ID</label>
+            <input
               id="player"
               name="player"
               type="text"
@@ -71,16 +91,19 @@ export default class Lobby extends Component {
               onChange={(e) => this.setState({ player: e.target.value })}
               style={{marginBottom: '0.2em'}}
             />
-            {this.props.playerRegexMessage && (
+            { this.props.playerRegexMessage && (
               <div style={{
-                fontSize: '0.7em', fontWeight:600, color:'darkgray',
+                fontSize: '0.7em',
+                fontWeight: 600,
+                color: 'steelblue',
                 marginBottom: '0.8em',
               }}
               >{this.props.playerRegexMessage}</div>
-            )}
+            ) }
           </div>
           <div>
-            <label htmlFor="name">Name</label> <input
+            <label htmlFor="name" style={{marginRight: '0.3em'}}>Name</label>
+            <input
               id="name"
               name="name"
               type="text"

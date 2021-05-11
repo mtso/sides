@@ -35,7 +35,7 @@ export default class WsTest extends React.Component {
       conn.then((ws) => {
         ws.send(JSON.stringify({
           messageId,
-          event: 'send',
+          event: 'ping',
           room: this.props.room,
           message: 'hello from client',
         }))

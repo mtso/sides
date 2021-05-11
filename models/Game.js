@@ -29,6 +29,18 @@ const GameSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.String,
     default: null,
   },
+  buttonLeftTitle: {
+    type: mongoose.Schema.Types.String,
+    default: 'Left',
+  },
+  buttonMiddleTitle: {
+    type: mongoose.Schema.Types.String,
+    default: '🏖',
+  },
+  buttonRightTitle: {
+    type: mongoose.Schema.Types.String,
+    default: 'Right',
+  },
   // All the players that have ever joined.
   // Use `$addToSet` to avoid duplicates and overwriting!!
   players: {
@@ -69,12 +81,6 @@ const GameSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Object,
     default: {},
   },
-  // gameState: { // All the fields that should be covered under optimistic locking with the version number.
-  //   version: {
-  //     type: mongoose.Schema.Types.Number,
-  //     default: 0,
-  //   },
-  // },
 }, {
   timestamps: true, // createdAt, updatedAt
 })

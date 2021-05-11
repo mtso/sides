@@ -1,6 +1,7 @@
-import React from 'react';
+import React from 'react'
 import WsTest from './WsTest'
 
+import Index from './components/Index'
 import Manage from './components/Manage'
 import Lobby from './components/Lobby'
 import Play from './components/Play'
@@ -25,6 +26,9 @@ export default class AppContainer extends React.Component {
           gameId={this.props.gameId}
           player={this.props.player}
           name={this.props.name}
+          buttonLeftTitle={this.props.buttonLeftTitle}
+          buttonMiddleTitle={this.props.buttonMiddleTitle}
+          buttonRightTitle={this.props.buttonRightTitle}
         />
       )
     } else if (this.props.page === 'present') {
@@ -36,6 +40,8 @@ export default class AppContainer extends React.Component {
           debug={this.props.debug}
         />
       )
+    } else {
+      return (<Index newGameId={this.props.newGameId} state={this.props.state} />)
     }
 
     return (

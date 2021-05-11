@@ -1,4 +1,5 @@
 import EventEmitter from 'eventemitter2'
+/* WebSocket enums */
 const CONNECTING = 0
 const OPEN = 1
 const CLOSING = 2
