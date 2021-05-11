@@ -211,6 +211,7 @@ app.get('/:id/play', async (req, res) => {
   if (!player || !name) { return res.redirect('/' + req.params.id) }
 
   const game = await Game.findOne({ gameId: req.params.id })
+  if (!game.players.includes(player)) { return res.redirect('/' + req.params.id )}
 
   if (!game) { return res.redirect('/') }
   const markup = getMarkup({
@@ -289,14 +290,6 @@ wss.on('connection', function connection(ws) {
         return
       }
       manager.addPlayer(gameId, player, name, Date.now(), ws)
-      // if (manager.hasPlayer(gameId, msg)) {
-      //   // pass
-      //   console.log('Game already has player!', gameId, player, name)
-      //   manager.addPlayer(gameId, player, name, Date.now(), ws)
-      // } else {
-      //   // addPlayer: (gameId, player, name, lastMessageTime, ws) => {
-      //   manager.addPlayer(gameId, player, name, Date.now(), ws)
-      // }
       manager.broadcastUpdate(gameId, renderGameJson(game))
     }
     else if (msg.event === 'ping') {

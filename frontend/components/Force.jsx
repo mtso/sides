@@ -46,22 +46,75 @@ export default class Force extends Component {
   }
 
   update() {
+    console.log("updating", this.props)
     const existing = toMap(this.node.data(), (d) => d.player)
-    const newNodes = (this.props.nodes || []).map((p) =>
-      existing[p.player] || ({
-        ...p,
+    const newNodes = (this.props.nodes || []).map((p) => //{
+    //   const prev = existing[p.player]
+    //   if (!prev) {
+    //     return {
+    //       x: this.props.side*this.width / 2,
+    //       y: Math.floor(Math.random() * 50)- 25,
+    //       ...p,
+    //     }
+    //   } else {
+    //     return Object.assign({}, prev, {
+    //       online: p.online,
+    //       name: p.name,
+    //     })
+    //   }
+    // })
+      // existing[p.player] || ({
+      ({
         x: this.props.side*this.width / 2,
-        y: Math.floor(Math.random() * 50)- 25
+        y: Math.floor(Math.random() * 50)- 25,
+        ...(existing[p.player] || {}),
+        ...p,
       }))
 
     const node = this.node.data(newNodes, (d) => d.player)
     node.exit().remove()
 
+    // Update existing ones, maybe optimize by removing and appending just the 
+    // changed nodes.
+    node.selectAll('circle').remove()
+    node.selectAll('text').remove()
+    node.append('circle')
+      .attr('fill', 'white')
+      .attr("stroke", (d) => d.online ? "blue" : 'lightgray')
+      .attr("stroke-width", 1.5)
+      .style('opacity', (d) => d.online ? '1.0' : '0.7')
+      .attr('r', 20)
+    node.append('text')
+      .attr('text-anchor', 'middle')
+      .attr('alignment-baseline', 'middle')
+      .attr('fill', 'black')
+      .style('font-size', (d) => {
+        const len = (d.name || '').length
+        if (len >= 4) {
+          const size = Math.max( (20-Math.min(20,len))/20 , 0.4 )
+          return `${size}em`
+        } else {
+          return '1em'
+        }
+      })
+      .style('font-weight', (d) => {
+        if ((d.name || '').length < 10) {
+          return '400'
+        } else {
+          return '600'
+        }
+      })
+      .text((d) => {
+        const name = d.name || ''
+        return name.length <= 14 ? d.name : name.substring(0, 13) + '…'
+      })
+
     const nodeEnter = node.enter().append('g')
     nodeEnter.append('circle')
       .attr('fill', 'white')
-      .attr("stroke", "blue")
+      .attr("stroke", (d) => d.online ? "blue" : 'lightgray')
       .attr("stroke-width", 1.5)
+      .style('opacity', (d) => d.online ? '1.0' : '0.7')
       .attr('r', 20)
     nodeEnter.append('text')
       .attr('text-anchor', 'middle')

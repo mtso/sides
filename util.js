@@ -8,9 +8,10 @@ function pick(obj, keys) {
 }
 
 /* params: (array, (value) => key) */
-function toMap(list, getKey) {
+function toMap(list, getKey, updateValues) {
+  updateValues = updateValues || ((v) => v)
   return list.reduce((acc, value) => {
-    acc[getKey(value)] = value
+    acc[getKey(value)] = updateValues(value)
     return acc
   }, {})
 }

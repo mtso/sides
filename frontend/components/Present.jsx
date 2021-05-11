@@ -3,7 +3,7 @@ import superagent from 'superagent'
 
 import Force from './Force'
 import GameEvents from '../GameEvents'
-import { pick, getKeyFromPlayer } from '../../util'
+import { pick, toMap, getKeyFromPlayer } from '../../util'
 
 export default class Present extends Component {
   constructor(props) {
@@ -43,50 +43,52 @@ export default class Present extends Component {
     let nodesF = []
 
     if (questionId) {
+      const onlineMap = toMap(this.state.online || [], (p) => p.player)
+      const visited = toMap(this.state.online || [], (p) => p.player)
       const resp = this.state.responses[questionId] || {}
       resp.a = (resp.a || []).filter((p) => !!this.state.playerInfo[getKeyFromPlayer(p)])
       resp.b = (resp.b || []).filter((p) => !!this.state.playerInfo[getKeyFromPlayer(p)])
 
-      const visited = this.state.players.reduce((acc, p) => {
-        acc[p] = p
-        return acc
-      }, {})
-
       nodesA = resp.a.map((p) => {
         delete visited[p]
-        const info = this.state.playerInfo[getKeyFromPlayer(p)]
+        let info = this.state.playerInfo[getKeyFromPlayer(p)]
+        info = info || this.onlineMap[p.player]
         return {
           player: info.player,
           name: info.name,
+          online: !!onlineMap[info.player],
           r: 20,
         }
       })
       nodesB = resp.b.map((p) => {
         delete visited[p]
-        const info = this.state.playerInfo[getKeyFromPlayer(p)]
+        let info = this.state.playerInfo[getKeyFromPlayer(p)]
+        info = info || this.onlineMap[p.player]
         return {
           player: info.player,
           name: info.name,
+          online: !!onlineMap[info.player],
           r: 20,
         }
       })
       nodesF = Object.values(visited).map((p) => {
-        const info = this.state.playerInfo[getKeyFromPlayer(p)]
+        let info = this.state.playerInfo[getKeyFromPlayer(p.player)]
+        info = info || this.onlineMap[p.player]
         return {
           player: info.player,
           name: info.name,
+          online: !!onlineMap[info.player],
           r: 20,
         }
       })
 
     } else {
-      nodesF = (this.state.online || []).map((p) => {
-        return {
-          player: p.player,
-          name: p.name,
-          r: 20,
-        }
-      })
+      const onlineMap = toMap(
+        this.state.online || [],
+        (p) => p.player,
+        (v) => ({...v, online: true, r: 20})
+      )
+      nodesF = Object.values(onlineMap)
     }
 
     const question = this.state.openQuestionId && this.state.questions.filter((q) => q._id === this.state.openQuestionId)[0]
@@ -95,9 +97,9 @@ export default class Present extends Component {
       <>
       <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>
         <div>
-        <h3 style={{textAlign: 'center', marginBottom: 0}}>
+        <h4 style={{textAlign: 'center', marginBottom: 0}}>
           Which Side Are You On...
-        </h3>
+        </h4>
         <h1 style={{
           textAlign: 'center',
           color: question ? 'black' : 'lightgray',
