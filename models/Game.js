@@ -53,6 +53,10 @@ const GameSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.String,
     default: 'white',
   },
+  radius: {
+    type: mongoose.Schema.Types.Number,
+    default: 25,
+  },
   // All the players that have ever joined.
   // Use `$addToSet` to avoid duplicates and overwriting!!
   players: {

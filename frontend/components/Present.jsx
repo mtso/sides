@@ -18,6 +18,7 @@ export default class Present extends Component {
       backgroundColorLeft: this.props.backgroundColorLeft,
       backgroundColorMiddle: this.props.backgroundColorMiddle,
       backgroundColorRight: this.props.backgroundColorRight,
+      radius: 25, // default
     }
     this.game = new GameEvents(this.props.gameId)
   }
@@ -29,14 +30,8 @@ export default class Present extends Component {
     })
   }
 
-  generateNode() {
-    return {
-      r: 20,
-      name: ''+(Math.floor(Math.random() * 30)),
-    }
-  }
-
   render() {
+    const R = this.state.radius
     const questionId = this.state.openQuestionId
     let nodesA = []
     let nodesB = []
@@ -57,7 +52,7 @@ export default class Present extends Component {
           player: info.player,
           name: info.name,
           online: !!onlineMap[info.player],
-          r: 20,
+          r: R,
         }
       })
       nodesB = resp.b.map((p) => {
@@ -68,7 +63,7 @@ export default class Present extends Component {
           player: info.player,
           name: info.name,
           online: !!onlineMap[info.player],
-          r: 20,
+          r: R,
         }
       })
       nodesF = Object.values(visited).map((p) => {
@@ -78,7 +73,7 @@ export default class Present extends Component {
           player: info.player,
           name: info.name,
           online: !!onlineMap[info.player],
-          r: 20,
+          r: R,
         }
       })
 
@@ -86,7 +81,7 @@ export default class Present extends Component {
       const onlineMap = toMap(
         this.state.online || [],
         (p) => p.player,
-        (v) => ({...v, online: true, r: 20})
+        (v) => ({...v, online: true, r: R})
       )
       nodesF = Object.values(onlineMap)
     }

@@ -42,6 +42,7 @@ app.post('/api/games/:id', async (req, res) => {
     'questions', 'playerRegex', 'playerRegexMessage',
     'buttonLeftTitle', 'buttonMiddleTitle', 'buttonRightTitle',
     'backgroundColorLeft', 'backgroundColorMiddle', 'backgroundColorRight',
+    'radius',
     'openQuestionId',
   ])
 

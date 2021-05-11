@@ -32,6 +32,9 @@ export default class Manage extends Component {
       newBackgroundColorLeft: null,
       newBackgroundColorMiddle: null,
       newBackgroundColorRight: null,
+
+      radius: null,
+      newRadius: null,
     }
 
     this.game = new GameEvents(this.props.gameId)
@@ -54,6 +57,7 @@ export default class Manage extends Component {
       newBackgroundColorLeft: resp.body.backgroundColorLeft,
       newBackgroundColorMiddle: resp.body.backgroundColorMiddle,
       newBackgroundColorRight: resp.body.backgroundColorRight,
+      newRadius: resp.body.radius,
     })
     
     this.game.join('admin', 'admin')
@@ -96,6 +100,8 @@ export default class Manage extends Component {
         backgroundColorLeft: this.state.newBackgroundColorLeft || null,
         backgroundColorMiddle: this.state.newBackgroundColorMiddle || null,
         backgroundColorRight: this.state.newBackgroundColorRight || null,
+
+        radius: (+this.state.newRadius) || null,
       })
 
     this.setState({
@@ -109,15 +115,9 @@ export default class Manage extends Component {
       newBackgroundColorLeft: resp.body.backgroundColorLeft,
       newBackgroundColorMiddle: resp.body.backgroundColorMiddle,
       newBackgroundColorRight: resp.body.backgroundColorRight,
+      newRadius: resp.body.radius,
     })
   }
-
-  // async clearOpenQuestion() {
-  //   const resp = await superagent.post('/api/games/' + this.props.gameId)
-  //     .query({ adminCode: this.props.adminCode })
-  //     .send({ openQuestionId: null })
-  //   this.setState({ openQuestionId: resp.body.openQuestionId })
-  // }
 
   async setOpenQuestion(openQuestionId) {
     const resp = await superagent.post('/api/games/' + this.props.gameId)
@@ -136,6 +136,7 @@ export default class Manage extends Component {
       || this.state.backgroundColorLeft !== this.state.newBackgroundColorLeft
       || this.state.backgroundColorMiddle !== this.state.newBackgroundColorMiddle
       || this.state.backgroundColorRight !== this.state.newBackgroundColorRight
+      || this.state.radius !== this.state.newRadius
   }
 
   render() {
@@ -210,12 +211,24 @@ export default class Manage extends Component {
                         value={this.state.newBackgroundColorRight}
                         onChange={(e) => this.setState({ newBackgroundColorRight: e.target.value })}
                       /></div>
+                      <div>Ball Radius: <input className="control" type="text"
+                        placeholder={25}
+                        value={this.state.newRadius}
+                        onChange={(e) => this.setState({ newRadius: e.target.value })}
+                      /></div>
                       <div>
                         <button className="control"
                           onClick={(e) => {
                             this.setState({
                               newPlayerRegex: this.state.playerRegex,
                               newPlayerRegexMessage: this.state.playerRegexMessage,
+                              newButtonLeftTitle: this.state.buttonLeftTitle,
+                              newButtonMiddleTitle: this.state.buttonMiddleTitle,
+                              newButtonRightTitle: this.state.buttonRightTitle,
+                              newBackgroundColorLeft: this.state.backgroundColorLeft,
+                              newBackgroundColorMiddle: this.state.backgroundColorMiddle,
+                              newBackgroundColorRight: this.state.backgroundColorRight,
+                              newRadius: this.state.radius,
                             })
                           }}
                           disabled={!this.hasChangesToSave()}
@@ -311,30 +324,7 @@ export default class Manage extends Component {
                     )
                   })
                 }
-                {/*{
-                  (this.state.players || []).map((player) => {
-                    //const isOffline = !!offlineMap[player]/}
-                    return (
-                      <li key={player}
-                      >{player}</li>
-                    )
-                  })
-                }*/}
               </ul>
-            {/*</div>*/}
-
-            {/*<div className="col" style={{minWidth: '300px', maxWidth:'300px'}}>*/}
-              {/*<h3>Online</h3>
-              <ul>
-                {
-                  (this.state.online || []).map((p) => {
-                    return (
-                      <li key={p.player}
-                      >{p.player} ({p.name})</li>
-                    )
-                  })
-                }
-              </ul>*/}
             </div>
           </div>
 

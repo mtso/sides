@@ -31,7 +31,7 @@ export default class Force extends Component {
       .velocityDecay(0.95)
       .force("x", d3.forceX().strength(0.51))
       .force("y", d3.forceY().strength(0.51))
-      .force("collide", d3.forceCollide().radius((d) => d.r + 1).iterations(3))
+      .force("collide", d3.forceCollide().radius((d) => d.r + 3).iterations(3))
       .force('charge', d3.forceManyBody()
              .strength((d, i) => (i ? 0 : (-width * 2) / 3)))
       .on('tick', () => {
@@ -46,7 +46,6 @@ export default class Force extends Component {
   }
 
   update() {
-    console.log("updating", this.props)
     const existing = toMap(this.node.data(), (d) => d.player)
     const newNodes = (this.props.nodes || []).map((p) =>
       ({
@@ -59,6 +58,16 @@ export default class Force extends Component {
     const node = this.node.data(newNodes, (d) => d.player)
     node.exit().remove()
 
+    const fontSizer = (d) => {
+      const len = (d.name || '').length
+      if (len >= 4) {
+        const size = Math.max( (d.r-Math.min(d.r,len))/(d.r) , 0.6 )
+        return `${size}em`
+      } else {
+        return '1.1em'
+      }
+    }
+
     // Update existing ones, maybe optimize by removing and appending just the 
     // changed nodes.
     node.selectAll('circle').remove()
@@ -68,20 +77,12 @@ export default class Force extends Component {
       .attr("stroke", (d) => d.online ? "blue" : 'lightgray')
       .attr("stroke-width", 1.5)
       .style('opacity', (d) => d.online ? '1.0' : '0.7')
-      .attr('r', 20)
+      .attr('r', (d) => d.r)
     node.append('text')
       .attr('text-anchor', 'middle')
       .attr('alignment-baseline', 'middle')
       .attr('fill', 'black')
-      .style('font-size', (d) => {
-        const len = (d.name || '').length
-        if (len >= 4) {
-          const size = Math.max( (20-Math.min(20,len))/20 , 0.4 )
-          return `${size}em`
-        } else {
-          return '1em'
-        }
-      })
+      .style('font-size', fontSizer)
       .style('font-weight', (d) => {
         if ((d.name || '').length < 10) {
           return '400'
@@ -91,7 +92,7 @@ export default class Force extends Component {
       })
       .text((d) => {
         const name = d.name || ''
-        return name.length <= 14 ? d.name : name.substring(0, 13) + '…'
+        return name.length <= 15 ? d.name : name.substring(0, 14) + '…'
       })
 
     const nodeEnter = node.enter().append('g')
@@ -100,20 +101,12 @@ export default class Force extends Component {
       .attr("stroke", (d) => d.online ? "blue" : 'lightgray')
       .attr("stroke-width", 1.5)
       .style('opacity', (d) => d.online ? '1.0' : '0.7')
-      .attr('r', 20)
+      .attr('r', (d) => d.r)
     nodeEnter.append('text')
       .attr('text-anchor', 'middle')
       .attr('alignment-baseline', 'middle')
       .attr('fill', 'black')
-      .style('font-size', (d) => {
-        const len = (d.name || '').length
-        if (len >= 4) {
-          const size = Math.max( (20-Math.min(20,len))/20 , 0.4 )
-          return `${size}em`
-        } else {
-          return '1em'
-        }
-      })
+      .style('font-size', fontSizer)
       .style('font-weight', (d) => {
         if ((d.name || '').length < 10) {
           return '400'
