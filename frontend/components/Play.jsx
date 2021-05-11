@@ -23,8 +23,6 @@ export default class Play extends Component {
         questions,
       })
     })
-    this.game.on('ping', (event) => console.log('Event:ping', event))
-    this.game.on('response', (event) => console.log('Event:response', event))
   }
 
   async makeChoice(choice) {
@@ -46,11 +44,15 @@ export default class Play extends Component {
           <h3>Question: {question && question.text}</h3>
         </div>
         <div>
-          <button className="control"
+          <button
+            className="control"
             onClick={(e) => this.makeChoice('a')}
+            disabled={!question}
           >{this.props.buttonLeftTitle || 'Left'}</button>
-          <button className="control"
+          <button
+            className="control"
             onClick={(e) => this.makeChoice(null)}
+            disabled={!question}
           >
           {
             /\p{Extended_Pictographic}/u.test(buttonMiddleTitle)
@@ -58,8 +60,10 @@ export default class Play extends Component {
               : {buttonMiddleTitle}
           }
           </button>
-          <button className="control"
+          <button
+            className="control"
             onClick={(e) => this.makeChoice('b')}
+            disabled={!question}
           >{this.props.buttonRightTitle || 'Right'}</button>
         </div>
       </div>

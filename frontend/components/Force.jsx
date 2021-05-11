@@ -3,6 +3,10 @@ import * as d3 from "d3"
 
 import { toMap } from '../../util'
 
+function toCss(obj) {
+  return Object.keys(obj).map((k) => `${k}:${obj[k]}`).join('; ')
+}
+
 export default class Force extends Component {
   constructor(props) {
     super(props);
@@ -63,7 +67,26 @@ export default class Force extends Component {
       .attr('text-anchor', 'middle')
       .attr('alignment-baseline', 'middle')
       .attr('fill', 'black')
-      .text(d => d.name)
+      .style('font-size', (d) => {
+        const len = (d.name || '').length
+        if (len >= 4) {
+          const size = Math.max( (20-Math.min(20,len))/20 , 0.4 )
+          return `${size}em`
+        } else {
+          return '1em'
+        }
+      })
+      .style('font-weight', (d) => {
+        if ((d.name || '').length < 10) {
+          return '400'
+        } else {
+          return '600'
+        }
+      })
+      .text((d) => {
+        const name = d.name || ''
+        return name.length <= 14 ? d.name : name.substring(0, 13) + '…'
+      })
 
     this.node = node.merge(nodeEnter)
     this.simulation.nodes(newNodes, (d) => d.player).restart();

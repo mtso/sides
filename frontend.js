@@ -1,10 +1,4 @@
 function getMarkup(params) {
-  // const {page, testInfo, gameId, adminCode} = params
-  // 
-            //     gameId, adminCode
-            //     page: "${page}",
-            //     testInfo: ${JSON.stringify(testInfo)},
-            // }
   return `<!DOCTYPE html>
 <html>
     <head>
@@ -27,5 +21,5 @@ function getMarkup(params) {
 }
 
 module.exports = {
-  getMarkup: getMarkup
+  getMarkup,
 }

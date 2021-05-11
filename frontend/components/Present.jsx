@@ -44,8 +44,8 @@ export default class Present extends Component {
 
     if (questionId) {
       const resp = this.state.responses[questionId] || {}
-      resp.a = resp.a || []
-      resp.b = resp.b || []
+      resp.a = (resp.a || []).filter((p) => !!this.state.playerInfo[getKeyFromPlayer(p)])
+      resp.b = (resp.b || []).filter((p) => !!this.state.playerInfo[getKeyFromPlayer(p)])
 
       const visited = this.state.players.reduce((acc, p) => {
         acc[p] = p

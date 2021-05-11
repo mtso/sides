@@ -9,6 +9,7 @@ export default class Lobby extends Component {
       name: '',
       previousPlayer: null,
       previousName: null,
+      error: null,
     }
 
     this.handleSubmit = this.handleSubmit.bind(this)
@@ -28,12 +29,17 @@ export default class Lobby extends Component {
   }
 
   async handleSubmit(e) {
-    if (this.props.playerRegex &&
-        !(new RegExp(this.props.playerRegex).test(this.state.player))) {
+    const isPlayerInvalid = this.props.playerRegex &&
+        !(new RegExp(this.props.playerRegex).test(this.state.player))
+    if (isPlayerInvalid) {
       e.preventDefault()
+      this.setState({ error: 'Invalid ID.' })
+      return
     }
     else if (!this.state.name) {
       e.preventDefault()
+      this.setState({ error: 'Missing name.' })
+      return
     }
     this.savePlayerData(this.state.player, this.state.name)
   }
@@ -120,6 +126,9 @@ export default class Lobby extends Component {
               value="Join Game"
             />
           </div>
+          { this.state.error && <div style={{color:'coral', fontSize: '0.7em', fontWeight: 600}}>
+            {this.state.error}
+          </div> }
         </form>
       </div>
     )
