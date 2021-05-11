@@ -48,22 +48,7 @@ export default class Force extends Component {
   update() {
     console.log("updating", this.props)
     const existing = toMap(this.node.data(), (d) => d.player)
-    const newNodes = (this.props.nodes || []).map((p) => //{
-    //   const prev = existing[p.player]
-    //   if (!prev) {
-    //     return {
-    //       x: this.props.side*this.width / 2,
-    //       y: Math.floor(Math.random() * 50)- 25,
-    //       ...p,
-    //     }
-    //   } else {
-    //     return Object.assign({}, prev, {
-    //       online: p.online,
-    //       name: p.name,
-    //     })
-    //   }
-    // })
-      // existing[p.player] || ({
+    const newNodes = (this.props.nodes || []).map((p) =>
       ({
         x: this.props.side*this.width / 2,
         y: Math.floor(Math.random() * 50)- 25,
