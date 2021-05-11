@@ -35,12 +35,16 @@ export default class Manage extends Component {
 
       radius: null,
       newRadius: null,
+
+      editQuestionId: null,
+      editQuestionValue: '',
     }
 
     this.game = new GameEvents(this.props.gameId)
     this.setOpenQuestion = this.setOpenQuestion.bind(this)
     this.hasChangesToSave = this.hasChangesToSave.bind(this)
     this.saveOptions = this.saveOptions.bind(this)
+    this.updateQuestion = this.updateQuestion.bind(this)
   }
 
   async componentDidMount() {
@@ -137,6 +141,23 @@ export default class Manage extends Component {
       || this.state.backgroundColorMiddle !== this.state.newBackgroundColorMiddle
       || this.state.backgroundColorRight !== this.state.newBackgroundColorRight
       || this.state.radius !== this.state.newRadius
+  }
+
+  async updateQuestion(id, text) {
+    const questions = this.state.questions.map((q) => {
+      if (q._id === id) {
+        q.text = text
+      }
+      return q
+    })
+    const resp = await superagent.post('/api/games/' + this.props.gameId)
+      .query({ adminCode: this.props.adminCode })
+      .send({ questions })
+    this.setState({
+      questions: resp.body.questions,
+      editQuestionId: null,
+      editQuestionValue: '',
+    })
   }
 
   render() {
@@ -264,6 +285,7 @@ export default class Manage extends Component {
                 {
                   (this.state.questions || []).map((q) => {
                     const isOpen = q._id === this.state.openQuestionId
+                    const isEditing = this.state.editQuestionId === q._id
                     return (
                       <li key={q._id}>
                         <button
@@ -272,12 +294,36 @@ export default class Manage extends Component {
                           disabled={isOpen}
                           style={{marginRight: '0.4em'}}
                         >Open</button>
-                        <span
+                        <button
+                          className='control'
+                          onClick={(e) => isEditing
+                            ? this.setState({ editQuestionId: null, editQuestionValue: '' })
+                            : this.setState({ editQuestionId: q._id, editQuestionValue: q.text })}
+                          style={{marginRight: '0.4em'}}
+                        >{ isEditing ? 'Cancel' : 'Edit' }</button>
+                        {
+                          this.state.editQuestionId === q._id ? 
+                          <>
+                          <input type="text"
+                            className="control"
+                            style={{minWidth: '400px'}}
+                            onChange={(e) => this.setState({ editQuestionValue: e.target.value })}
+                            value={this.state.editQuestionValue}
+                          />
+                          <button
+                            className='control'
+                            onClick={(e) => this.updateQuestion(this.state.editQuestionId, this.state.editQuestionValue)}
+                          >Save</button>
+                          </>
+                          :
+                          <span
                           style={{
                             color: isOpen ? 'indigo' : 'inherit',
                             marginRight: '0.3em'
                           }}
                         >{isOpen && '> '}{q.text}</span>
+                        }
+
                         { this.state.responses[q._id] && (
                           <span>({(this.state.responses[q._id].a || []).length}-{(this.state.responses[q._id].b || []).length})</span>
                         ) }
