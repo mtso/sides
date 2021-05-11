@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import superagent from 'superagent'
 
 import GameEvents from '../GameEvents'
-import { pick } from '../../util'
+import { pick, toMap, getKeyFromPlayer } from '../../util'
 
 export default class Manage extends Component {
   constructor(props) {
@@ -15,6 +15,7 @@ export default class Manage extends Component {
       newPlayerRegexMessage: null,
       openQuestionId: null,
       players: [],
+      playerInfo: {},
       responses: {},
       newQuestionValue: '',
       online: [],
@@ -57,9 +58,7 @@ export default class Manage extends Component {
     
     this.game.join('admin', 'admin')
     this.game.on('update', (event) => {
-      this.setState({
-        online: event.online,
-      })
+      this.setState(pick(event, Object.keys(this.state)))
     })
   }
 
@@ -140,6 +139,10 @@ export default class Manage extends Component {
   }
 
   render() {
+    const onlineMap = toMap(this.state.online, (p) => p.player)
+    const onlineList = this.state.players.filter((p) => !!onlineMap[p]).map((p) => this.state.playerInfo[getKeyFromPlayer(p)])
+    const offlineList = this.state.players.filter((p) => !onlineMap[p]).map((p) => this.state.playerInfo[getKeyFromPlayer(p)])
+
     return (
       <>
         <div className='container'>
@@ -229,7 +232,7 @@ export default class Manage extends Component {
             </div>
           </div>
 
-          <div className="row">
+          <div className="row" style={{marginBottom: '2em', paddingBottom: '2em'}}>
             <div className="col">
 
               <div>
@@ -293,30 +296,45 @@ export default class Manage extends Component {
               <h3>Players</h3>
               <ul>
                 {
-                  (this.state.players || []).map((player) => {
-                    {/*const isOffline = !!offlineMap[player]*/}
-                    return (
-                      <li key={player}
-                      >{player}</li>
-                    )
-                  })
-                }
-              </ul>
-            {/*</div>*/}
-
-            {/*<div className="col" style={{minWidth: '300px', maxWidth:'300px'}}>*/}
-              <h3>Online</h3>
-              <ul>
-                {
-                  (this.state.online || []).map((p) => {
-                    {/*const isOffline = !!offlineMap[player]*/}
+                  onlineList.map((p) => {
                     return (
                       <li key={p.player}
                       >{p.player} ({p.name})</li>
                     )
                   })
                 }
+                {
+                  offlineList.map((p) => {
+                    return (
+                      <li key={p.player} style={{color: 'lightgray'}}
+                      >{p.player} ({p.name})</li>
+                    )
+                  })
+                }
+                {/*{
+                  (this.state.players || []).map((player) => {
+                    //const isOffline = !!offlineMap[player]/}
+                    return (
+                      <li key={player}
+                      >{player}</li>
+                    )
+                  })
+                }*/}
               </ul>
+            {/*</div>*/}
+
+            {/*<div className="col" style={{minWidth: '300px', maxWidth:'300px'}}>*/}
+              {/*<h3>Online</h3>
+              <ul>
+                {
+                  (this.state.online || []).map((p) => {
+                    return (
+                      <li key={p.player}
+                      >{p.player} ({p.name})</li>
+                    )
+                  })
+                }
+              </ul>*/}
             </div>
           </div>
 

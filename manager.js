@@ -55,6 +55,7 @@ function makeManager() {
       return store[gameId] || []
     },
     broadcastUpdate: (gameId, gameJson) => {
+      console.log('broadcastUpdate', gameId)
       if (!(gameId in store)) { return }
       const players = (store[gameId] || [])
       const update = {
