@@ -18,7 +18,7 @@ export default class Present extends Component {
       backgroundColorLeft: this.props.backgroundColorLeft,
       backgroundColorMiddle: this.props.backgroundColorMiddle,
       backgroundColorRight: this.props.backgroundColorRight,
-      radius: 25, // default
+      radius: 40, // default
     }
     this.game = new GameEvents(this.props.gameId)
   }
