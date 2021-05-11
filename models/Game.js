@@ -41,6 +41,18 @@ const GameSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.String,
     default: 'Right',
   },
+  backgroundColorLeft: {
+    type: mongoose.Schema.Types.String,
+    default: 'white',
+  },
+  backgroundColorMiddle: {
+    type: mongoose.Schema.Types.String,
+    default: 'lightgray',
+  },
+  backgroundColorRight: {
+    type: mongoose.Schema.Types.String,
+    default: 'white',
+  },
   // All the players that have ever joined.
   // Use `$addToSet` to avoid duplicates and overwriting!!
   players: {

@@ -5,7 +5,7 @@ const OPEN = 1
 const CLOSING = 2
 const CLOSED = 3
 
-export default class Game extends EventEmitter {
+export default class GameEvents extends EventEmitter {
   constructor(gameId, WebSocketClient) {
     super()
     this.WebSocketClient = WebSocketClient || window.WebSocket
@@ -22,7 +22,7 @@ export default class Game extends EventEmitter {
   }
 
   closeWs() {
-    this.ws.onerror = this.ws.onopen = this.ws.onclose = null
+    this.ws.onerror = this.ws.onopen = this.ws.onclose = this.ws.onmessage = null
     this.ws.close()
   }
 
@@ -42,6 +42,7 @@ export default class Game extends EventEmitter {
       const connectionTime = Date.now() - start
       this.emit('open', { connectionTime })
     }
+    this.ws.onclose = () => this.emit('close')
     this.ws.onmessage = (message) => {
       try {
         const event = JSON.parse(message.data)
@@ -83,7 +84,6 @@ export default class Game extends EventEmitter {
         if (!this.ws) {
           try {
             console.log('Unconnected, checking if a connection can be established')
-            // await this.getWs()
             const ws = await this.getWs()
             ws.send(JSON.stringify({
               event: 'join',
@@ -100,6 +100,7 @@ export default class Game extends EventEmitter {
           const ws = await this.getWs()
           if (ws.readyState === CLOSING || ws.readyState === CLOSED) {
             console.log('Server connection closing or closed, removing ws')
+            this.closeWs()
             this.ws = null
           }
           // try {

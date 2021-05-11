@@ -38,6 +38,9 @@ export default class AppContainer extends React.Component {
           players={this.props.players}
           responses={this.props.responses}
           debug={this.props.debug}
+          backgroundColorLeft={this.props.backgroundColorLeft}
+          backgroundColorMiddle={this.props.backgroundColorMiddle}
+          backgroundColorRight={this.props.backgroundColorRight}
         />
       )
     } else {

@@ -42,9 +42,13 @@ function renderGameJson(game) {
     questions: game.questions,
     playerRegexMessage: game.playerRegexMessage,
     playerRegex: game.playerRegex,
+    // style
     buttonLeftTitle: game.buttonLeftTitle,
     buttonMiddleTitle: game.buttonMiddleTitle,
     buttonRightTitle: game.buttonRightTitle,
+    backgroundColorLeft: game.backgroundColorLeft,
+    backgroundColorMiddle: game.backgroundColorMiddle,
+    backgroundColorRight: game.backgroundColorRight,
 
     openQuestionId: game.openQuestionId,
     players: game.players,

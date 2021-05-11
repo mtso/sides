@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import superagent from 'superagent'
 
 import Force from './Force'
-import Game from '../Game'
+import GameEvents from '../GameEvents'
 import { pick, getKeyFromPlayer } from '../../util'
 
 export default class Present extends Component {
@@ -16,7 +16,7 @@ export default class Present extends Component {
       players: [],
       playerInfo: {}
     }
-    this.game = new Game(this.props.gameId)
+    this.game = new GameEvents(this.props.gameId)
   }
 
   componentDidMount() {
@@ -95,9 +95,15 @@ export default class Present extends Component {
         </h1>
         </div>
         <div style={{flex: 2}}>
-          <Force nodes={nodesA} width={'40%'} side={1} />
-          <Force nodes={nodesF} width={'20%'} side={0} />
-          <Force nodes={nodesB} width={'40%'} side={-1}/>
+          <Force nodes={nodesA} width={'40%'} side={1}
+            backgroundColor={this.props.backgroundColorLeft}
+          />
+          <Force nodes={nodesF} width={'20%'} side={0}
+            backgroundColor={this.props.backgroundColorMiddle}
+          />
+          <Force nodes={nodesB} width={'40%'} side={-1}
+            backgroundColor={this.props.backgroundColorRight}
+          />
         </div>
       </div>
 

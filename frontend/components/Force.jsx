@@ -74,7 +74,11 @@ export default class Force extends Component {
       <svg
         width={this.props.width}
         ref={this.ref}
-        style={{ outline: "1px solid #000", height: '100%' }}
+        style={{
+          outline: "1px solid #000",
+          height: '100%',
+          backgroundColor: this.props.backgroundColor,
+        }}
         xmlns="http://www.w3.org/2000/svg"
       ></svg>
     );

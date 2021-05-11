@@ -40,6 +40,8 @@ app.post('/api/games/:id', async (req, res) => {
   const gameId = req.params.id
   const adminModifiable = pick(req.body, [
     'questions', 'playerRegex', 'playerRegexMessage',
+    'buttonLeftTitle', 'buttonMiddleTitle', 'buttonRightTitle',
+    'backgroundColorLeft', 'backgroundColorMiddle', 'backgroundColorRight',
     'openQuestionId',
   ])
 
