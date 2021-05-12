@@ -1,4 +1,4 @@
-// env $(cat .env | xargs) node scripts/restore.js [filepath]
+// env $(cat .env | xargs) node scripts/dbrestore.js [filepath]
 // Loads data into the database specified in MONGODB_URI!!!
 
 const mongoose = require('mongoose')
@@ -7,7 +7,7 @@ const readline = require('readline')
 const Game = require('../models/Game')
 
 const datafile = process.argv[2]
-console.log('restoring data in', datafile)
+console.log('restoring data from', datafile)
 
 ;(async function() {
   await mongoose.connect(process.env.MONGODB_URI, {
