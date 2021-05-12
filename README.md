@@ -1,9 +1,7 @@
 # Which Side Are You On? Game
 
-## todo
+*Which Side Are You On?* helps you to run a group game that
+asks questions and has participants joining one side or the other.
 
-- Add styling ability to present
-- Improve online/offline handling in present view
-- Add button title modification to admin
-- Update Player view to disable or enable buttons
-- Resolve secure websocket issue.
+## todo
+- Add more documentation to Index

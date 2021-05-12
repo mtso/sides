@@ -1,19 +1,6 @@
 const crypto = require('crypto')
 const { pick } = require('./util')
 
-function parseMessage(msg) {
-  try {
-    return JSON.parse(msg)
-  } catch (err) {
-    console.error('Received invalid message')
-  }
-}
-
-// manager.getPlayers().forEach((ws) => ws.send(JSON.stringify({
-//   event: 'update',
-//   game: game,
-// })))
-
 function makeManager() {
   const store = {}
 
@@ -33,13 +20,6 @@ function makeManager() {
       store[gameId] = clients.concat([ ws ])
       return ws
     },
-    // presentPlayer: (gameId, player, lastMessageTime) => {
-    //   (clients[gameId] || []).forEach((c) => {
-    //     if (c.player === player) {
-    //       c.lastMessageTime = lastMessageTime
-    //     }
-    //   })
-    // },
     removePlayer: (gameId, clientId) => {
       if (!store[gameId]) { return }
       let removed = null

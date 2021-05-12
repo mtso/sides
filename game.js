@@ -1,28 +1,30 @@
-function renderGameJson(game) {
-  return {
-    gameId: game.gameId,
-    createdAt: game.createdAt,
-    updatedAt: game.updatedAt,
+const { pick } = require('./util')
 
-    questions: game.questions,
-    playerRegexMessage: game.playerRegexMessage,
-    playerRegex: game.playerRegex,
-    // style
-    buttonLeftTitle: game.buttonLeftTitle,
-    buttonMiddleTitle: game.buttonMiddleTitle,
-    buttonRightTitle: game.buttonRightTitle,
-    backgroundColorLeft: game.backgroundColorLeft,
-    backgroundColorMiddle: game.backgroundColorMiddle,
-    backgroundColorRight: game.backgroundColorRight,
-    radius: game.radius,
+const GAME_JSON_KEYS = [
+  'gameId',
+  'createdAt',
+  'updatedAt',
 
-    openQuestionId: game.openQuestionId,
-    players: game.players,
-    playerInfo: game.playerInfo,
-    responses: game.responses,
-  }
-}
+  'playerRegexMessage',
+  'playerRegex',
+  // style
+  'buttonLeftTitle',
+  'buttonMiddleTitle',
+  'buttonRightTitle',
+  'backgroundColorLeft',
+  'backgroundColorMiddle',
+  'backgroundColorRight',
+  'radius',
+
+  'questions',
+  'openQuestionId',
+  'players',
+  'playerInfo',
+  'responses',
+]
+
+const renderGameJson = (game) => pick(game, GAME_JSON_KEYS)
 
 module.exports = {
-  renderGameJson,
+  renderGameJson
 }
