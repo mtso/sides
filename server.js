@@ -8,7 +8,7 @@ const WebSocket = require('ws')
 
 const Game = require('./models/Game')
 const { getMarkup } = require('./frontend')
-const { pick, getKeyFromPlayer, getPlayerFromKey } = require('./util')
+const { pick, getKeyFromPlayer } = require('./util')
 const { renderGameJson } = require('./game')
 const { makeManager } = require('./manager')
 
@@ -17,7 +17,9 @@ mongoose.connect(process.env.MONGODB_URI, {
   useUnifiedTopology: true,
   useCreateIndex: true,
   useFindAndModify: false,
+  autoReconnect: true,
 }).then(() => console.log('MongoDB connected'))
+  .catch((err) => console.error('Failed to connect MongoDB', err))
 
 const app = express()
 const manager = makeManager()
@@ -76,19 +78,11 @@ app.post('/api/games/:id/choose', async (req, res) => {
       [`responses.${questionId}.b`]: player,
     }
   } else if (choice === 'a') {
-    patch['$pull'] = {
-      [`responses.${questionId}.b`]: player,
-    }
-    patch['$addToSet'] = {
-      [`responses.${questionId}.a`]: player,
-    }
+    patch['$pull'] = { [`responses.${questionId}.b`]: player }
+    patch['$addToSet'] = { [`responses.${questionId}.a`]: player }
   } else if (choice === 'b') {
-    patch['$pull'] = {
-      [`responses.${questionId}.a`]: player,
-    }
-    patch['$addToSet'] = {
-      [`responses.${questionId}.b`]: player,
-    }
+    patch['$pull'] = { [`responses.${questionId}.a`]: player }
+    patch['$addToSet'] = { [`responses.${questionId}.b`]: player }
   } else {
     return res.status(400).json({ error: 'Invalid choice' })
   }
@@ -122,9 +116,8 @@ app.post('/new_game', async (req, res) => {
   const gameId = req.body.gameId
   if (!gameId) { return res.redirect('/') }
   const adminCode = crypto.randomUUID().replaceAll('-', '')
-  let game
   try {
-    game = await Game.create({ gameId, adminCode })
+    await Game.create({ gameId, adminCode })
   } catch (err) {
     if (err.code === 11000) {
       console.warn('Creating game hit dupe gameId with:', gameId)
@@ -134,7 +127,6 @@ app.post('/new_game', async (req, res) => {
       return res.redirect('/?state=errorUnexpected')
     }
   }
-
   res.redirect('/' + gameId + '/manage-' + adminCode)
 })
 
@@ -165,12 +157,6 @@ app.post('/:id/join', async (req, res) => {
     },
   }, { new: true, upsert: true })
 
-  // res.json({
-  //   player,
-  //   name,
-  //   ...renderGameJson(game),
-  // })
-
   res.redirect('/' + gameId + '/play?' + uriParams)
 })
 
@@ -196,8 +182,7 @@ app.get('/:id/data.json', async (req, res) => {
 
 app.get('/:id/present', async (req, res) => {
   const game = await Game.findOne({ gameId: req.params.id })
-
-  if (!game) { res.redirect('/') }
+  if (!game) { return res.redirect('/') }
   const markup = getMarkup({
     ...req.query,
     page: 'present',
@@ -212,9 +197,9 @@ app.get('/:id/play', async (req, res) => {
   if (!player || !name) { return res.redirect('/' + req.params.id) }
 
   const game = await Game.findOne({ gameId: req.params.id })
+  if (!game) { return res.redirect('/') }
   if (!game.players.includes(player)) { return res.redirect('/' + req.params.id )}
 
-  if (!game) { return res.redirect('/') }
   const markup = getMarkup({
     page: 'play',
     player,
@@ -287,8 +272,8 @@ wss.on('connection', function connection(ws) {
       const { gameId, player, name } = msg
       const game = await Game.findOne({ gameId })
       if (!game) {
-        ws.send({ event: 'error', error: 'Game not found' })
-        return
+        // Probably unexpected
+        return ws.send({ event: 'error', error: 'Game not found' })
       }
       manager.addPlayer(gameId, player, name, Date.now(), ws)
       manager.broadcastUpdate(gameId, renderGameJson(game))
@@ -299,14 +284,14 @@ wss.on('connection', function connection(ws) {
     else {
       console.warn('Unrecognized event', msg)
     }
-  });
-});
+  })
+})
 
 server.on('upgrade', function (request, socket, head) {
   wss.handleUpgrade(request, socket, head, function (ws) {
     wss.emit('connection', ws, request);
-  });
-});
+  })
+})
 
 const listener = server.listen(process.env.PORT || 3000, () => {
   console.log(`Listening on ${listener.address().port}`)

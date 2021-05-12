@@ -74,19 +74,6 @@ const GameSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Object,
     default: {},
   },
-  /*
-  gameState: {
-    version: 0 // used for optimistic locking.
-    activeQuestionId: <id>,
-    players: ["matthew <matthewt@wepay.com>", ...],
-    responses: {
-      <id>: {
-        a: ["matthew <matthewt@wepay.com>", ...]
-        b: [...]
-      }
-    }
-  }
-  */
   openQuestionId: {
     type: mongoose.Schema.Types.String,
     default: null,
@@ -100,5 +87,7 @@ const GameSchema = new mongoose.Schema({
 }, {
   timestamps: true, // createdAt, updatedAt
 })
+
+// GameSchema.index({updatedAt: 1}, {expireAfterSeconds: 14*24*60*60 }) // 14 days
 
 module.exports = mongoose.model('game', GameSchema)
