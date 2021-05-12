@@ -88,6 +88,6 @@ const GameSchema = new mongoose.Schema({
   timestamps: true, // createdAt, updatedAt
 })
 
-// GameSchema.index({updatedAt: 1}, {expireAfterSeconds: 14*24*60*60 }) // 14 days
+GameSchema.index({updatedAt: 1}, {expireAfterSeconds: 30*24*60*60 }) // 30 days
 
 module.exports = mongoose.model('game', GameSchema)
