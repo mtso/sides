@@ -38,7 +38,9 @@ export default class Play extends Component {
 
   render() {
     const question = this.state.openQuestionId && this.state.questions.filter((q) => q._id === this.state.openQuestionId)[0]
+    const buttonLeftTitle = this.props.buttonLeftTitle || 'Left'
     const buttonMiddleTitle = this.props.buttonMiddleTitle || '🏝'
+    const buttonRightTitle = this.props.buttonRightTitle || 'Right'
     return (
       <div class="container">
         <div>
@@ -49,7 +51,13 @@ export default class Play extends Component {
             className="control"
             onClick={(e) => this.makeChoice('a')}
             disabled={!question}
-          >{this.props.buttonLeftTitle || 'Left'}</button>
+          >
+          {
+            /\p{Extended_Pictographic}/u.test(buttonLeftTitle)
+              ? <span style={{verticalAlign: "middle", fontSize: '1.05em'}}>{buttonLeftTitle}</span>
+              : buttonLeftTitle
+          }
+          </button>
           <button
             className="control"
             onClick={(e) => this.makeChoice(null)}
@@ -58,14 +66,20 @@ export default class Play extends Component {
           {
             /\p{Extended_Pictographic}/u.test(buttonMiddleTitle)
               ? <span style={{verticalAlign: "middle", fontSize: '1.05em'}}>{buttonMiddleTitle}</span>
-              : {buttonMiddleTitle}
+              : buttonMiddleTitle
           }
           </button>
           <button
             className="control"
             onClick={(e) => this.makeChoice('b')}
             disabled={!question}
-          >{this.props.buttonRightTitle || 'Right'}</button>
+          >
+          {
+            /\p{Extended_Pictographic}/u.test(buttonRightTitle)
+              ? <span style={{verticalAlign: "middle", fontSize: '1.05em'}}>{buttonRightTitle}</span>
+              : buttonRightTitle
+          }
+          </button>
         </div>
       </div>
     )
