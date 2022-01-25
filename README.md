@@ -5,6 +5,7 @@ asks questions and has participants joining one side or the other.
 
 - [Screenshots](#user-content-screenshots)
 - [Instructions](#user-content-instructions)
+- [Deployment](#user-content-deployment)
 
 ## Screenshots
 
@@ -30,3 +31,18 @@ Roles:
 2. Share the game link with players (looks like "https://sides.mtso.io/name-of-game" where name-of-game is the generated game name).
 3. Livestream the presentation view "https://sides.mtso.io/name-of-game/present".
 4. Add questions in the manager view and open them to show the question to players. Players can pick a side for a question as long as the question is open.
+
+## Deployment
+
+The main web app running at https://sides.mtso.io is hosted on heroku.
+
+Requirements
+- MongoDB instance with a connection string in the environment variable `MONGODB_URI`. A MongoDB database can be provisioned at https://www.mongodb.com/atlas/database.
+- Heroku CLI (Installation instructions at https://devcenter.heroku.com/articles/heroku-cli)
+
+```
+git clone https://github.com/mtso/sides
+git checkout main
+heroku git:remote -a <app name>
+git push heroku HEAD
+```
